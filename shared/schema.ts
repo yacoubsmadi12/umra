@@ -26,6 +26,11 @@ export const umrahRequests = pgTable("umrah_requests", {
   visaUrl: text("visa_url"),
   ticketUrl: text("ticket_url"),
   adminComments: text("admin_comments"),
+  needsCompanion: boolean("needs_companion").default(false),
+  companion1Name: text("companion1_name"),
+  companion1PassportUrl: text("companion1_passport_url"),
+  companion2Name: text("companion2_name"),
+  companion2PassportUrl: text("companion2_passport_url"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

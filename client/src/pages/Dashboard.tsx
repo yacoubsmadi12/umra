@@ -7,10 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard } from "lucide-react";
+import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard, Users } from "lucide-react";
 import { Redirect } from "wouter";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 
 function StatusCard({ status, comments }: { status: string, comments?: string | null }) {
   const config = {
@@ -242,6 +244,142 @@ export default function Dashboard() {
               </motion.div>
             </div>
           )}
+
+          {/* Companion Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <Card className="p-6 border-primary/10 shadow-sm">
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-3 text-primary">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-bold text-lg">المرافقين (اختياري)</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Label htmlFor="needsCompanion" className="text-sm font-medium">هل تحتاج إلى مرافق؟</Label>
+                  <Checkbox
+                    id="needsCompanion"
+                    checked={request.needsCompanion || false}
+                    onCheckedChange={(checked) => {
+                      updateRequest({ id: request.id, data: { needsCompanion: !!checked } });
+                    }}
+                    disabled={isUpdating}
+                  />
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {request.needsCompanion && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="space-y-6 overflow-hidden"
+                  >
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* Companion 1 */}
+                      <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-muted-foreground/10">
+                        <div className="space-y-2">
+                          <Label>اسم المرافق الأول</Label>
+                          <Input
+                            placeholder="الاسم الكامل"
+                            defaultValue={request.companion1Name || ""}
+                            onBlur={(e) => {
+                              if (e.target.value !== request.companion1Name) {
+                                updateRequest({ id: request.id, data: { companion1Name: e.target.value } });
+                              }
+                            }}
+                            disabled={isUpdating}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">جواز سفر المرافق الأول</Label>
+                          {request.companion1PassportUrl ? (
+                            <div className="flex items-center justify-between bg-white p-2 rounded-lg border text-xs">
+                              <span className="text-green-600 font-medium">تم الرفع</span>
+                              <a href={request.companion1PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline">عرض</a>
+                            </div>
+                          ) : (
+                            <ObjectUploader
+                              onGetUploadParameters={async (file) => {
+                                const res = await fetch("/api/uploads/request-url", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+                                });
+                                const { uploadURL } = await res.json();
+                                return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                              }}
+                              onComplete={(res) => {
+                                if (res.successful?.[0]?.uploadURL) {
+                                  updateRequest({ id: request.id, data: { companion1PassportUrl: res.successful[0].uploadURL } });
+                                }
+                              }}
+                            >
+                              <Button variant="outline" size="sm" className="w-full text-xs" disabled={isUpdating}>
+                                <Upload className="w-3 h-3 ml-2" /> رفع الجواز
+                              </Button>
+                            </ObjectUploader>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Companion 2 */}
+                      <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-muted-foreground/10">
+                        <div className="space-y-2">
+                          <Label>اسم المرافق الثاني</Label>
+                          <Input
+                            placeholder="الاسم الكامل"
+                            defaultValue={request.companion2Name || ""}
+                            onBlur={(e) => {
+                              if (e.target.value !== request.companion2Name) {
+                                updateRequest({ id: request.id, data: { companion2Name: e.target.value } });
+                              }
+                            }}
+                            disabled={isUpdating}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">جواز سفر المرافق الثاني</Label>
+                          {request.companion2PassportUrl ? (
+                            <div className="flex items-center justify-between bg-white p-2 rounded-lg border text-xs">
+                              <span className="text-green-600 font-medium">تم الرفع</span>
+                              <a href={request.companion2PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline">عرض</a>
+                            </div>
+                          ) : (
+                            <ObjectUploader
+                              onGetUploadParameters={async (file) => {
+                                const res = await fetch("/api/uploads/request-url", {
+                                  method: "POST",
+                                  headers: { "Content-Type": "application/json" },
+                                  body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+                                });
+                                const { uploadURL } = await res.json();
+                                return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                              }}
+                              onComplete={(res) => {
+                                if (res.successful?.[0]?.uploadURL) {
+                                  updateRequest({ id: request.id, data: { companion2PassportUrl: res.successful[0].uploadURL } });
+                                }
+                              }}
+                            >
+                              <Button variant="outline" size="sm" className="w-full text-xs" disabled={isUpdating}>
+                                <Upload className="w-3 h-3 ml-2" /> رفع الجواز
+                              </Button>
+                            </ObjectUploader>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </Card>
+          </motion.div>
         </div>
       </Layout>
     </ProtectedRoute>

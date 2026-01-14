@@ -83,6 +83,11 @@ export const api = {
         visaUrl: z.string().optional(),
         ticketUrl: z.string().optional(),
         adminComments: z.string().optional(),
+        needsCompanion: z.boolean().optional(),
+        companion1Name: z.string().optional(),
+        companion1PassportUrl: z.string().optional(),
+        companion2Name: z.string().optional(),
+        companion2PassportUrl: z.string().optional(),
       }),
       responses: {
         200: z.custom<typeof umrahRequests.$inferSelect>(),
