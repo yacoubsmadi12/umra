@@ -67,6 +67,16 @@
   }
 }
 
+@keyframes slow-zoom {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.animate-slow-zoom {
+  animation: slow-zoom 30s infinite ease-in-out;
+}
+
 /* Islamic Geometric Pattern Background Utility */
 .bg-islamic-pattern {
   background-image: radial-gradient(var(--primary) 1px, transparent 1px);

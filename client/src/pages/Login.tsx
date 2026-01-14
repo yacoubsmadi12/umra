@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import kaabaBg from "@assets/generated_images/animated_kaaba_with_spiritual_lighting.png";
 
 export default function Login() {
   const { login, isLoggingIn } = useAuth();
@@ -17,20 +18,18 @@ export default function Login() {
   };
 
   return (
-    <div dir="rtl" className="min-h-screen w-full flex items-center justify-center relative bg-gradient-to-br from-[#053046] to-[#074668] overflow-hidden font-cairo">
-      {/* Decorative Spiritual Background Elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[50%] -left-[50%] w-[200%] h-[200%] opacity-5 bg-[url('https://www.transparenttextures.com/patterns/arabesque.png')]"
-        />
-      </div>
+    <div dir="rtl" className="min-h-screen w-full flex items-center justify-center relative overflow-hidden font-cairo">
+      {/* Background Image with Overlay */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] scale-110 animate-slow-zoom"
+        style={{ backgroundImage: `url(${kaabaBg})` }}
+      />
+      <div className="absolute inset-0 bg-[#053046]/70 backdrop-blur-[2px]" />
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.8 }}
         className="relative z-10 w-full max-w-md p-6"
       >
         <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 text-white">
