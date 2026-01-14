@@ -73,6 +73,11 @@ export class DatabaseStorage implements IStorage {
       visaUrl: umrahRequests.visaUrl,
       ticketUrl: umrahRequests.ticketUrl,
       adminComments: umrahRequests.adminComments,
+      needsCompanion: umrahRequests.needsCompanion,
+      companion1Name: umrahRequests.companion1Name,
+      companion1PassportUrl: umrahRequests.companion1PassportUrl,
+      companion2Name: umrahRequests.companion2Name,
+      companion2PassportUrl: umrahRequests.companion2PassportUrl,
       createdAt: umrahRequests.createdAt,
       user: users
     })
