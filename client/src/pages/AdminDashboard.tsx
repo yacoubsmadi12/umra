@@ -189,6 +189,31 @@ export default function AdminDashboard() {
                   )}
                 </div>
               )}
+
+              {req.needsCompanion && (
+                <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {req.companion1Name && (
+                    <div className="p-2 rounded bg-muted/50 text-xs flex justify-between items-center border">
+                      <span className="font-semibold">المرافق 1: {req.companion1Name}</span>
+                      {req.companion1PassportUrl && (
+                        <a href={req.companion1PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline flex items-center gap-1">
+                          <FileText className="w-3 h-3" /> جواز السفر
+                        </a>
+                      )}
+                    </div>
+                  )}
+                  {req.companion2Name && (
+                    <div className="p-2 rounded bg-muted/50 text-xs flex justify-between items-center border">
+                      <span className="font-semibold">المرافق 2: {req.companion2Name}</span>
+                      {req.companion2PassportUrl && (
+                        <a href={req.companion2PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline flex items-center gap-1">
+                          <FileText className="w-3 h-3" /> جواز السفر
+                        </a>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-2 justify-center min-w-[200px]">
