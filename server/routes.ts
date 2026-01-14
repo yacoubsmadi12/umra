@@ -1,4 +1,4 @@
-import type { Express } from "express";
+import type { Express, Request } from "express";
 import type { Server } from "http";
 import { storage } from "./storage";
 import { api } from "@shared/routes";
@@ -6,8 +6,51 @@ import { z } from "zod";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
+import nodemailer from "nodemailer";
+
+declare module 'express-session' {
+  interface SessionData {
+    userId: number;
+  }
+}
 
 const MemoryStore = createMemoryStore(session);
+
+// --- Mailer Logic ---
+async function getTransporter() {
+  const settings = await storage.getEmailSettings();
+  if (!settings) return null;
+
+  return nodemailer.createTransport({
+    host: settings.host,
+    port: settings.port,
+    auth: {
+      user: settings.user,
+      pass: settings.password,
+    },
+  });
+}
+
+async function sendEmail(to: string, subject: string, text: string) {
+  try {
+    const transporter = await getTransporter();
+    const settings = await storage.getEmailSettings();
+    if (!transporter || !settings) {
+      console.log(`[MAIL SKIP] No SMTP settings. Content: ${text}`);
+      return;
+    }
+
+    await transporter.sendMail({
+      from: settings.fromEmail,
+      to,
+      subject,
+      text,
+    });
+    console.log(`[MAIL SENT] To ${to}: ${subject}`);
+  } catch (error) {
+    console.error("[MAIL ERROR]", error);
+  }
+}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -79,8 +122,11 @@ export async function registerRoutes(
       const input = api.requests.create.input.parse(req.body);
       const request = await storage.createRequest(req.session.userId, input);
       
-      // Simulate Email Notification
-      console.log(`[EMAIL] To User ${req.session.userId}: Thank you for registering for the Umrah program.`);
+      // Send Email Notification
+      const user = await storage.getUser(req.session.userId);
+      if (user) {
+        await sendEmail(user.email, "Registration Received", "Thank you for registering for the Umrah program. We will review your request shortly.");
+      }
 
       res.status(201).json(request);
     } catch (err) {
@@ -117,9 +163,12 @@ export async function registerRoutes(
 
     const updated = await storage.updateRequest(id, updates);
 
-    // Simulate Email on status change
+    // Send Email on status change
     if (updates.status) {
-       console.log(`[EMAIL] To Request Owner: Your Umrah request status has been updated to ${updates.status}.`);
+       const owner = await storage.getUser(updated.userId);
+       if (owner) {
+         await sendEmail(owner.email, "Request Status Updated", `Your Umrah request status has been updated to ${updates.status}.`);
+       }
     }
 
     res.json(updated);
@@ -139,6 +188,22 @@ export async function registerRoutes(
       department: u.department,
       gender: u.gender
     })));
+  });
+
+  // --- Email Settings Routes ---
+  app.get(api.email.getSettings.path, requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const settings = await storage.getEmailSettings();
+    res.json(settings || null);
+  });
+
+  app.post(api.email.updateSettings.path, requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const input = api.email.updateSettings.input.parse(req.body);
+    const updated = await storage.updateEmailSettings(input);
+    res.json(updated);
   });
 
   // --- Seed Data ---

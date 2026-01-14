@@ -1,9 +1,9 @@
 import { db } from "./db";
 import {
-  users, umrahRequests, tripMaterials,
+  users, umrahRequests, tripMaterials, emailSettings,
   type User, type InsertUser,
   type UmrahRequest, type InsertUmrahRequest,
-  type TripMaterial
+  type TripMaterial, type EmailSettings, type InsertEmailSettings
 } from "@shared/schema";
 import { eq, desc } from "drizzle-orm";
 
@@ -25,6 +25,10 @@ export interface IStorage {
 
   // Colleagues
   getApprovedColleagues(): Promise<User[]>;
+
+  // Email Settings
+  getEmailSettings(): Promise<EmailSettings | undefined>;
+  updateEmailSettings(settings: InsertEmailSettings): Promise<EmailSettings>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -103,6 +107,25 @@ export class DatabaseStorage implements IStorage {
     .where(eq(umrahRequests.status, 'approved'));
     
     return results.map(r => r.user);
+  }
+
+  async getEmailSettings(): Promise<EmailSettings | undefined> {
+    const [settings] = await db.select().from(emailSettings);
+    return settings;
+  }
+
+  async updateEmailSettings(settings: InsertEmailSettings): Promise<EmailSettings> {
+    const existing = await this.getEmailSettings();
+    if (existing) {
+      const [updated] = await db.update(emailSettings)
+        .set({ ...settings, updatedAt: new Date() })
+        .where(eq(emailSettings.id, existing.id))
+        .returning();
+      return updated;
+    } else {
+      const [inserted] = await db.insert(emailSettings).values(settings).returning();
+      return inserted;
+    }
   }
 }
 

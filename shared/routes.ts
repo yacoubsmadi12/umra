@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertUserSchema, insertUmrahRequestSchema, users, umrahRequests, tripMaterials } from './schema';
+import { insertUserSchema, insertUmrahRequestSchema, insertEmailSettingsSchema, users, umrahRequests, tripMaterials, emailSettings } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -110,6 +110,23 @@ export const api = {
           gender: z.string()
         })),
       },
+    }
+  },
+  email: {
+    getSettings: {
+      method: 'GET' as const,
+      path: '/api/admin/email-settings',
+      responses: {
+        200: z.custom<typeof emailSettings.$inferSelect>().nullable(),
+      }
+    },
+    updateSettings: {
+      method: 'POST' as const,
+      path: '/api/admin/email-settings',
+      input: insertEmailSettingsSchema,
+      responses: {
+        200: z.custom<typeof emailSettings.$inferSelect>(),
+      }
     }
   }
 };

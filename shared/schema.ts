@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -40,6 +40,17 @@ export const tripMaterials = pgTable("trip_materials", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+// Email settings table for GUI configuration
+export const emailSettings = pgTable("email_settings", {
+  id: serial("id").primaryKey(),
+  host: text("host").notNull(),
+  port: integer("port").notNull(),
+  user: text("user").notNull(),
+  password: text("password").notNull(),
+  fromEmail: text("from_email").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertUmrahRequestSchema = createInsertSchema(umrahRequests).omit({ 
   id: true, 
@@ -48,9 +59,12 @@ export const insertUmrahRequestSchema = createInsertSchema(umrahRequests).omit({
   updatedAt: true,
   status: true // Status is managed by admin
 });
+export const insertEmailSettingsSchema = createInsertSchema(emailSettings).omit({ id: true, updatedAt: true });
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type UmrahRequest = typeof umrahRequests.$inferSelect;
 export type InsertUmrahRequest = z.infer<typeof insertUmrahRequestSchema>;
 export type TripMaterial = typeof tripMaterials.$inferSelect;
+export type EmailSettings = typeof emailSettings.$inferSelect;
+export type InsertEmailSettings = z.infer<typeof insertEmailSettingsSchema>;

@@ -2,7 +2,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useAllRequests, useUpdateRequest } from "@/hooks/use-requests";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Card } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,15 +10,58 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Check, X, Upload, FileText } from "lucide-react";
-import { useState } from "react";
+import { Loader2, Check, X, Upload, FileText, Mail } from "lucide-react";
+import { useState, useEffect } from "react";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { api, buildUrl } from "@shared/routes";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function AdminDashboard() {
   const { data: requests, isLoading } = useAllRequests();
   const { mutate: updateRequest } = useUpdateRequest();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const { toast } = useToast();
+
+  const { data: emailSettings, isLoading: isLoadingEmail } = useQuery({
+    queryKey: [api.email.getSettings.path],
+  });
+
+  const updateEmailMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest(api.email.updateSettings.method, api.email.updateSettings.path, data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.email.getSettings.path] });
+      toast({ title: "تم التحديث", description: "تم حفظ إعدادات البريد الإلكتروني بنجاح" });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "خطأ", description: "فشل في حفظ الإعدادات" });
+    }
+  });
+
+  const [smtpForm, setSmtpForm] = useState({
+    host: "",
+    port: 587,
+    user: "",
+    password: "",
+    fromEmail: ""
+  });
+
+  useEffect(() => {
+    if (emailSettings) {
+      setSmtpForm({
+        host: emailSettings.host,
+        port: emailSettings.port,
+        user: emailSettings.user,
+        password: emailSettings.password,
+        fromEmail: emailSettings.fromEmail
+      });
+    }
+  }, [emailSettings]);
 
   if (isLoading) {
     return (
@@ -41,6 +84,75 @@ export default function AdminDashboard() {
   const handleFileUpload = (id: number, type: 'visa' | 'ticket', url: string) => {
     updateRequest({ id, data: type === 'visa' ? { visaUrl: url } : { ticketUrl: url } });
   };
+
+  const EmailSettingsForm = () => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Mail className="w-5 h-5" />
+          إعدادات خادم البريد (SMTP)
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={(e) => {
+          e.preventDefault();
+          updateEmailMutation.mutate(smtpForm);
+        }} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Host / الخادم</Label>
+              <Input 
+                value={smtpForm.host} 
+                onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
+                placeholder="smtp.example.com" 
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Port / المنفذ</Label>
+              <Input 
+                type="number"
+                value={smtpForm.port} 
+                onChange={e => setSmtpForm({...smtpForm, port: parseInt(e.target.value)})}
+                placeholder="587" 
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Username / اسم المستخدم</Label>
+              <Input 
+                value={smtpForm.user} 
+                onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Password / كلمة المرور</Label>
+              <Input 
+                type="password"
+                value={smtpForm.password} 
+                onChange={e => setSmtpForm({...smtpForm, password: e.target.value})}
+                required
+              />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>From Email / البريد المرسل</Label>
+              <Input 
+                type="email"
+                value={smtpForm.fromEmail} 
+                onChange={e => setSmtpForm({...smtpForm, fromEmail: e.target.value})}
+                placeholder="no-reply@zain.com"
+                required
+              />
+            </div>
+          </div>
+          <Button type="submit" className="w-full" disabled={updateEmailMutation.isPending}>
+            {updateEmailMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
 
   const RequestList = ({ filterStatus }: { filterStatus: string }) => {
     const filtered = requests?.filter(r => filterStatus === 'all' || r.status === filterStatus);
@@ -133,7 +245,7 @@ export default function AdminDashboard() {
                        return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
                      }}
                      onComplete={(res) => {
-                       if (res.successful[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL);
+                       if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL);
                      }}
                   >
                      <div className="w-full">
@@ -153,7 +265,7 @@ export default function AdminDashboard() {
                        return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
                      }}
                      onComplete={(res) => {
-                       if (res.successful[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL);
+                       if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL);
                      }}
                   >
                      <div className="w-full">
@@ -183,11 +295,12 @@ export default function AdminDashboard() {
           </header>
 
           <Tabs defaultValue="pending" className="w-full">
-            <TabsList className="w-full grid grid-cols-4 lg:w-[400px]">
+            <TabsList className="w-full grid grid-cols-5 lg:w-[500px]">
               <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
               <TabsTrigger value="approved">المقبولة</TabsTrigger>
               <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
               <TabsTrigger value="all">الكل</TabsTrigger>
+              <TabsTrigger value="settings">الإعدادات</TabsTrigger>
             </TabsList>
             
             <div className="mt-6">
@@ -195,6 +308,7 @@ export default function AdminDashboard() {
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
               <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
+              <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
             </div>
           </Tabs>
         </div>

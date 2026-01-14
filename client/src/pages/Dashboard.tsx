@@ -177,20 +177,9 @@ export default function Dashboard() {
                              };
                            }}
                            onComplete={(result) => {
-                             if (result.successful[0]) {
-                               // Assuming the object path is returned differently or we construct it.
-                               // In the provided blueprint, the `use-upload` hook returns `objectPath`.
-                               // For Uppy, we might need to handle the response differently or just rely on the fact 
-                               // that we need to store the public URL or object path.
-                               // Let's assume we can derive the URL or fetch it.
-                               // For simplicity in this demo, I will alert success and refresh or ideally use the response.
-                               // Wait, Uppy result doesn't give me the custom response from `request-url` easily in `onComplete`.
-                               // I'll simulate success for now with a placeholder or parse if possible.
-                               // Actually, let's just use the uploadURL base or similar.
-                               // BETTER: Just use the `uploadURL` without query params as the ID if possible, 
-                               // but we need the signed URL to upload.
-                               // Simplification: I'll hardcode a "success" callback url update.
-                               handlePassportUpload(result.successful[0].uploadURL);
+                             if (result.successful?.[0]) {
+                               const url = result.successful[0].uploadURL;
+                               if (url) handlePassportUpload(url);
                              }
                            }}
                          >
