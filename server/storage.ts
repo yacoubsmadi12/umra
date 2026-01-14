@@ -1,38 +1,109 @@
-import { type User, type InsertUser } from "@shared/schema";
-import { randomUUID } from "crypto";
-
-// modify the interface with any CRUD methods
-// you might need
+import { db } from "./db";
+import {
+  users, umrahRequests, tripMaterials,
+  type User, type InsertUser,
+  type UmrahRequest, type InsertUmrahRequest,
+  type TripMaterial
+} from "@shared/schema";
+import { eq, desc } from "drizzle-orm";
 
 export interface IStorage {
-  getUser(id: string): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  // User Auth
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmployeeId(employeeId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Requests
+  createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest>;
+  getRequestByUserId(userId: number): Promise<UmrahRequest | undefined>;
+  getAllRequests(): Promise<UmrahRequest & { user: User }[]>; // Join with user
+  updateRequest(id: number, updates: Partial<UmrahRequest>): Promise<UmrahRequest>;
+  
+  // Materials
+  getMaterials(): Promise<TripMaterial[]>;
+  createMaterial(material: typeof tripMaterials.$inferInsert): Promise<TripMaterial>;
+
+  // Colleagues
+  getApprovedColleagues(): Promise<User[]>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<string, User>;
-
-  constructor() {
-    this.users = new Map();
-  }
-
-  async getUser(id: string): Promise<User | undefined> {
-    return this.users.get(id);
-  }
-
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
-  }
-
-  async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
+export class DatabaseStorage implements IStorage {
+  async getUser(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
+
+  async getUserByEmployeeId(employeeId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.employeeId, employeeId));
+    return user;
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest> {
+    const [newRequest] = await db.insert(umrahRequests).values({ 
+      userId, 
+      checklistCompleted: request.checklistCompleted || false,
+      status: 'pending'
+    }).returning();
+    return newRequest;
+  }
+
+  async getRequestByUserId(userId: number): Promise<UmrahRequest | undefined> {
+    const [request] = await db.select().from(umrahRequests).where(eq(umrahRequests.userId, userId));
+    return request;
+  }
+
+  async getAllRequests(): Promise<any> {
+    // Drizzle relation or manual join
+    return await db.select({
+      id: umrahRequests.id,
+      userId: umrahRequests.userId,
+      status: umrahRequests.status,
+      checklistCompleted: umrahRequests.checklistCompleted,
+      paymentMethod: umrahRequests.paymentMethod,
+      passportUrl: umrahRequests.passportUrl,
+      visaUrl: umrahRequests.visaUrl,
+      ticketUrl: umrahRequests.ticketUrl,
+      adminComments: umrahRequests.adminComments,
+      createdAt: umrahRequests.createdAt,
+      user: users
+    })
+    .from(umrahRequests)
+    .innerJoin(users, eq(umrahRequests.userId, users.id))
+    .orderBy(desc(umrahRequests.createdAt));
+  }
+
+  async updateRequest(id: number, updates: Partial<UmrahRequest>): Promise<UmrahRequest> {
+    const [updated] = await db.update(umrahRequests)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(umrahRequests.id, id))
+      .returning();
+    return updated;
+  }
+
+  async getMaterials(): Promise<TripMaterial[]> {
+    return await db.select().from(tripMaterials).orderBy(tripMaterials.order);
+  }
+
+  async createMaterial(material: typeof tripMaterials.$inferInsert): Promise<TripMaterial> {
+    const [newMat] = await db.insert(tripMaterials).values(material).returning();
+    return newMat;
+  }
+
+  async getApprovedColleagues(): Promise<User[]> {
+    const results = await db.select({
+      user: users
+    })
+    .from(umrahRequests)
+    .innerJoin(users, eq(umrahRequests.userId, users.id))
+    .where(eq(umrahRequests.status, 'approved'));
+    
+    return results.map(r => r.user);
+  }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();
