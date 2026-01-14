@@ -31,11 +31,11 @@ export default function Login() {
         transition={{ duration: 0.8 }}
         className="relative z-10 w-full max-w-md p-6"
       >
-        <div className="bg-white/10 backdrop-blur-xl border border-white/20 shadow-2xl rounded-3xl p-8 text-white">
+        <div className="bg-[#053046]/40 backdrop-blur-xl border border-white/10 shadow-2xl rounded-3xl p-8 text-white">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-20 h-20 bg-gradient-to-tr from-accent to-yellow-300 rounded-2xl flex items-center justify-center shadow-lg mb-4 transform rotate-3">
+            <div className="w-20 h-20 bg-gradient-to-tr from-[#074668] to-[#0a5a85] rounded-2xl flex items-center justify-center shadow-lg mb-4 transform rotate-3 border border-white/20">
                {/* Zain Logo Placeholder or Kaaba Icon */}
-               <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-[#074668]" stroke="currentColor" strokeWidth="2">
+               <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-white" stroke="currentColor" strokeWidth="2">
                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                </svg>
             </div>
