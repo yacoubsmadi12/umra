@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
 import { Loader2 } from "lucide-react";
-import kaabaBg from "@assets/generated_images/animated_kaaba_with_spiritual_lighting.png";
 
 export default function Login() {
   const { login, isLoggingIn } = useAuth();
@@ -22,7 +21,7 @@ export default function Login() {
       {/* Background Image with Overlay */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-[20s] scale-110 animate-slow-zoom"
-        style={{ backgroundImage: `url(${kaabaBg})` }}
+        style={{ backgroundImage: `url(https://i.postimg.cc/hj95w098/b.png)` }}
       />
       <div className="absolute inset-0 bg-[#053046]/70 backdrop-blur-[2px]" />
 
