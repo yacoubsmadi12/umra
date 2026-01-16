@@ -114,16 +114,16 @@ export async function registerRoutes(
   app.post(api.requests.create.path, requireAuth, async (req, res) => {
     try {
       // Check if request already exists
-      const existing = await storage.getRequestByUserId(req.session.userId);
+      const existing = await storage.getRequestByUserId(req.session.userId!);
       if (existing) {
         return res.status(400).json({ message: "Request already submitted" });
       }
 
       const input = api.requests.create.input.parse(req.body);
-      const request = await storage.createRequest(req.session.userId, input);
+      const request = await storage.createRequest(req.session.userId!, input);
       
       // Send Email Notification
-      const user = await storage.getUser(req.session.userId);
+      const user = await storage.getUser(req.session.userId!);
       if (user) {
         await sendEmail(user.email, "Registration Received", "Thank you for registering for the Umrah program. We will review your request shortly.");
       }
@@ -138,7 +138,7 @@ export async function registerRoutes(
   });
 
   app.get(api.requests.list.path, requireAuth, async (req, res) => {
-    const user = await storage.getUser(req.session.userId);
+    const user = await storage.getUser(req.session.userId!);
     if (user?.role !== 'admin') {
       return res.status(403).json({ message: "Forbidden" });
     }
@@ -147,18 +147,18 @@ export async function registerRoutes(
   });
 
   app.get(api.requests.myRequest.path, requireAuth, async (req, res) => {
-    const request = await storage.getRequestByUserId(req.session.userId);
+    const request = await storage.getRequestByUserId(req.session.userId!);
     res.json(request || null);
   });
 
   app.patch(api.requests.update.path, requireAuth, async (req, res) => {
     const id = parseInt(req.params.id);
-    const user = await storage.getUser(req.session.userId);
+    const user = await storage.getUser(req.session.userId!);
     const updates = req.body;
 
     // Security check: only admin can approve/reject
-    if ((updates.status || updates.visaUrl || updates.ticketUrl) && user?.role !== 'admin') {
-      return res.status(403).json({ message: "Only admin can update status/documents" });
+    if ((updates.status || updates.visaUrl || updates.ticketUrl || updates.assignedColleagueIds) && user?.role !== 'admin') {
+      return res.status(403).json({ message: "Only admin can update status/documents/colleagues" });
     }
 
     const updated = await storage.updateRequest(id, updates);
@@ -174,7 +174,16 @@ export async function registerRoutes(
     res.json(updated);
   });
 
-  // --- Materials & Colleagues ---
+  // --- Users, Materials & Colleagues ---
+
+  app.get("/api/users", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    if (!user || user.role !== 'admin') {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    const users = await storage.getUsers();
+    res.json(users);
+  });
 
   app.get(api.materials.list.path, requireAuth, async (req, res) => {
     const materials = await storage.getMaterials();
@@ -182,24 +191,24 @@ export async function registerRoutes(
   });
 
   app.get(api.colleagues.list.path, requireAuth, async (req, res) => {
-    const colleagues = await storage.getApprovedColleagues();
-    res.json(colleagues.map(u => ({
-      fullName: u.fullName,
-      department: u.department,
-      gender: u.gender
-    })));
+    const request = await storage.getRequestByUserId(req.session.userId!);
+    if (!request || !request.assignedColleagueIds?.length) {
+      return res.json([]);
+    }
+    const colleagues = await storage.getUsersByIds(request.assignedColleagueIds);
+    res.json(colleagues);
   });
 
   // --- Email Settings Routes ---
   app.get(api.email.getSettings.path, requireAuth, async (req, res) => {
-    const user = await storage.getUser(req.session.userId);
+    const user = await storage.getUser(req.session.userId!);
     if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
     const settings = await storage.getEmailSettings();
     res.json(settings || null);
   });
 
   app.post(api.email.updateSettings.path, requireAuth, async (req, res) => {
-    const user = await storage.getUser(req.session.userId);
+    const user = await storage.getUser(req.session.userId!);
     if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
     const input = api.email.updateSettings.input.parse(req.body);
     const updated = await storage.updateEmailSettings(input);
@@ -257,9 +266,8 @@ async function seedDatabase() {
     });
 
     // Seed Materials
-    await storage.createMaterial({ title: "Umrah Guide - Preparation", type: "booklet_page", url: "/assets/page1.png", order: 1 });
-    await storage.createMaterial({ title: "Umrah Guide - Ihram", type: "booklet_page", url: "/assets/page2.png", order: 2 });
-    await storage.createMaterial({ title: "Umrah Guide - Tawaf", type: "booklet_page", url: "/assets/page3.png", order: 3 });
+    await storage.createMaterial({ title: "دليل العمرة - الاستعداد", type: "booklet_page", url: "/assets/page1.png", order: 1 });
+    await storage.createMaterial({ title: "القواعد العامة للرحلة", type: "instruction", url: "يرجى الالتزام بمواعيد التجمع والحفاظ على نظافة الحافلة.", order: 1 });
     
     console.log("Database seeded successfully.");
   }

@@ -80,6 +80,7 @@ export const api = {
         status: z.enum(['pending', 'approved', 'rejected']).optional(),
         paymentMethod: z.enum(['salary_deduction', 'entertainment_allowance', 'cash', 'cliQ']).optional(),
         passportUrl: z.string().optional(),
+        militaryServiceUrl: z.string().optional(),
         visaUrl: z.string().optional(),
         ticketUrl: z.string().optional(),
         adminComments: z.string().optional(),
@@ -88,6 +89,7 @@ export const api = {
         companion1PassportUrl: z.string().optional(),
         companion2Name: z.string().optional(),
         companion2PassportUrl: z.string().optional(),
+        assignedColleagueIds: z.array(z.number()).optional(),
       }),
       responses: {
         200: z.custom<typeof umrahRequests.$inferSelect>(),

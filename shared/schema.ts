@@ -23,6 +23,7 @@ export const umrahRequests = pgTable("umrah_requests", {
   checklistCompleted: boolean("checklist_completed").default(false),
   paymentMethod: text("payment_method"), // salary_deduction, entertainment_allowance, cash, cliQ
   passportUrl: text("passport_url"),
+  militaryServiceUrl: text("military_service_url"),
   visaUrl: text("visa_url"),
   ticketUrl: text("ticket_url"),
   adminComments: text("admin_comments"),
@@ -31,6 +32,7 @@ export const umrahRequests = pgTable("umrah_requests", {
   companion1PassportUrl: text("companion1_passport_url"),
   companion2Name: text("companion2_name"),
   companion2PassportUrl: text("companion2_passport_url"),
+  assignedColleagueIds: integer("assigned_colleague_ids").array(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

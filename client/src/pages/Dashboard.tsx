@@ -1,5 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useMyRequest, useUpdateRequest } from "@/hooks/use-requests";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@shared/routes";
 import { Layout } from "@/components/Layout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { Card } from "@/components/ui/card";
@@ -9,10 +11,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard, Users } from "lucide-react";
-import { Redirect } from "wouter";
+import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard, Users, BookOpen, ShieldCheck, FileText, Phone, MessageCircle } from "lucide-react";
+import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
 
 function StatusCard({ status, comments }: { status: string, comments?: string | null }) {
   const config = {
@@ -25,13 +29,13 @@ function StatusCard({ status, comments }: { status: string, comments?: string | 
   const Icon = current.icon;
 
   return (
-    <div className={`p-6 rounded-2xl border ${current.color} flex flex-col items-center text-center gap-3`}>
+    <div className={`p-6 rounded-2xl border ${current.color} flex flex-col items-center text-center gap-3 mb-8`}>
       <Icon className="w-12 h-12" />
       <div>
         <h3 className="font-bold text-xl mb-1">{current.label}</h3>
         <p className="text-sm opacity-80">
           {status === 'pending' && "طلبك قيد المراجعة من قبل إدارة الموارد البشرية"}
-          {status === 'approved' && "مبروك! تمت الموافقة على طلبك. يرجى استكمال الخطوات التالية."}
+          {status === 'approved' && "مبروك! تمت الموافقة على طلبك. يمكنك الآن استكمال الإجراءات أدناه."}
           {status === 'rejected' && "نعتذر، لم يتم قبول طلبك في الوقت الحالي."}
         </p>
         {comments && (
@@ -47,6 +51,10 @@ function StatusCard({ status, comments }: { status: string, comments?: string | 
 export default function Dashboard() {
   const { data: request, isLoading } = useMyRequest();
   const { mutate: updateRequest, isPending: isUpdating } = useUpdateRequest();
+  const { data: materials } = useQuery({ queryKey: [api.materials.list.path] });
+  const { data: colleagues } = useQuery({ queryKey: [api.colleagues.list.path] });
+  const [showPayment, setShowPayment] = useState(false);
+  const [showDocs, setShowDocs] = useState(false);
 
   if (isLoading) {
     return (
@@ -60,326 +68,225 @@ export default function Dashboard() {
     );
   }
 
-  // Redirect to register if no request exists
-  if (!request) {
-    return <Redirect to="/register" />;
-  }
+  if (!request) return <Redirect to="/register" />;
 
-  const handlePaymentMethodChange = (value: string) => {
-    updateRequest({ id: request.id, data: { paymentMethod: value as any } });
-  };
-
-  const handlePassportUpload = (url: string) => {
-    updateRequest({ id: request.id, data: { passportUrl: url } });
-  };
+  const DashboardBox = ({ icon: Icon, title, onClick, disabled = false, children }: any) => (
+    <motion.div whileHover={!disabled ? { scale: 1.02 } : {}} whileTap={!disabled ? { scale: 0.98 } : {}}>
+      <Card 
+        className={`p-6 cursor-pointer h-full transition-all border-primary/10 hover:border-primary/30 shadow-sm hover:shadow-md ${disabled ? 'opacity-50 grayscale' : ''}`}
+        onClick={() => !disabled && onClick?.()}
+      >
+        <div className="flex flex-col items-center text-center gap-4">
+          <div className="p-4 bg-primary/5 rounded-2xl text-primary">
+            <Icon className="w-10 h-10" />
+          </div>
+          <h3 className="font-bold text-lg font-tajawal">{title}</h3>
+          {children}
+        </div>
+      </Card>
+    </motion.div>
+  );
 
   return (
     <ProtectedRoute>
       <Layout>
-        <div className="space-y-6 animate-in fade-in duration-500">
-          <header className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold font-tajawal text-primary">حالة الطلب</h1>
-            <Badge variant="outline" className="text-sm py-1 px-3">
-              رقم الطلب: #{request.id}
-            </Badge>
+        <div className="max-w-6xl mx-auto space-y-8 pb-12">
+          <header className="flex items-center justify-between border-b pb-4">
+            <h1 className="text-3xl font-bold font-tajawal text-primary">الرئيسية</h1>
+            <Badge variant="secondary" className="text-md px-4 py-1">طلب رقم #{request.id}</Badge>
           </header>
 
           <StatusCard status={request.status} comments={request.adminComments} />
 
-          {request.status === 'approved' && (
-            <div className="grid md:grid-cols-2 gap-6 mt-8">
-              {/* Payment Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-              >
-                <Card className="p-6 h-full border-primary/10 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-4 text-primary">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <CreditCard className="w-6 h-6" />
-                    </div>
-                    <h3 className="font-bold text-lg">طريقة الدفع</h3>
-                  </div>
-                  
-                  <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {/* Box 1: Booklet */}
+            <DashboardBox 
+              icon={BookOpen} 
+              title="كتيب زين للعمرة" 
+              onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
+            >
+              <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
+            </DashboardBox>
+
+            {/* Box 2: Payment Method */}
+            <Dialog open={showPayment} onOpenChange={setShowPayment}>
+              <DialogTrigger asChild>
+                <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={request.status !== 'approved'}>
+                  <p className="text-xs text-muted-foreground">
+                    {request.paymentMethod ? "تم تحديد: " + request.paymentMethod : "اختر الطريقة المناسبة"}
+                  </p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>تحديد طريقة الدفع</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="اختر الطريقة" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="salary_deduction">خصم من الراتب</SelectItem>
+                      <SelectItem value="entertainment_allowance">خصم من بدل الترفيه</SelectItem>
+                      <SelectItem value="cash">كاش</SelectItem>
+                      <SelectItem value="cliQ">تحويل كليك</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button className="w-full" onClick={() => setShowPayment(false)}>تم</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Box 3: Required Documents */}
+            <Dialog open={showDocs} onOpenChange={setShowDocs}>
+              <DialogTrigger asChild>
+                <DashboardBox icon={FileText} title="المستندات المطلوبة" disabled={request.status !== 'approved'}>
+                  <p className="text-xs text-muted-foreground">جواز السفر، دفتر الخدمة، والمرافقين</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>تحميل المستندات والمرافقين</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-6 py-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Passport */}
                     <div className="space-y-2">
-                      <Label>اختر طريقة الدفع المناسبة</Label>
-                      <Select 
-                        value={request.paymentMethod || ""} 
-                        onValueChange={handlePaymentMethodChange}
-                        disabled={!!request.paymentMethod || isUpdating}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="اختر الطريقة" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="salary_deduction">خصم من الراتب</SelectItem>
-                          <SelectItem value="entertainment_allowance">علاوة ترفيه</SelectItem>
-                          <SelectItem value="cash">دفع نقدي</SelectItem>
-                          <SelectItem value="cliQ">CliQ</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <Label>جواز السفر</Label>
+                      {request.passportUrl ? (
+                        <div className="bg-green-50 p-2 rounded border border-green-100 flex justify-between items-center">
+                          <span className="text-xs text-green-700">تم الرفع</span>
+                          <a href={request.passportUrl} target="_blank" className="text-primary underline text-xs">عرض</a>
+                        </div>
+                      ) : (
+                        <ObjectUploader onGetUploadParameters={async (file) => {
+                          const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                          const { uploadURL } = await res.json();
+                          return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                        }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { passportUrl: res.successful[0].uploadURL } })}>
+                          <Button variant="outline" size="sm" className="w-full text-xs"><Upload className="w-3 h-3 ml-1"/> رفع الجواز</Button>
+                        </ObjectUploader>
+                      )}
                     </div>
-                    {request.paymentMethod && (
-                      <p className="text-xs text-green-600 font-medium flex items-center gap-1">
-                        <CheckCircle2 className="w-3 h-3" />
-                        تم حفظ اختيارك
-                      </p>
-                    )}
-                  </div>
-                </Card>
-              </motion.div>
-
-              {/* Passport Upload Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-              >
-                <Card className="p-6 h-full border-primary/10 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center gap-3 mb-4 text-primary">
-                    <div className="p-2 bg-primary/10 rounded-lg">
-                      <Upload className="w-6 h-6" />
+                    {/* Military Service */}
+                    <div className="space-y-2">
+                      <Label>دفتر خدمة العلم</Label>
+                      {request.militaryServiceUrl ? (
+                        <div className="bg-green-50 p-2 rounded border border-green-100 flex justify-between items-center">
+                          <span className="text-xs text-green-700">تم الرفع</span>
+                          <a href={request.militaryServiceUrl} target="_blank" className="text-primary underline text-xs">عرض</a>
+                        </div>
+                      ) : (
+                        <ObjectUploader onGetUploadParameters={async (file) => {
+                          const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                          const { uploadURL } = await res.json();
+                          return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                        }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { militaryServiceUrl: res.successful[0].uploadURL } })}>
+                          <Button variant="outline" size="sm" className="w-full text-xs"><Upload className="w-3 h-3 ml-1"/> رفع الدفتر</Button>
+                        </ObjectUploader>
+                      )}
                     </div>
-                    <h3 className="font-bold text-lg">صورة جواز السفر</h3>
                   </div>
 
-                  <div className="space-y-4">
-                    {request.passportUrl ? (
-                      <div className="bg-muted/50 p-4 rounded-lg flex items-center justify-between">
-                        <span className="text-sm font-medium truncate max-w-[200px]">تم رفع الملف بنجاح</span>
-                        <a 
-                          href={request.passportUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-xs text-primary hover:underline"
-                        >
-                          عرض الملف
-                        </a>
-                      </div>
-                    ) : (
-                      <div className="text-center p-6 border-2 border-dashed rounded-lg border-muted-foreground/20">
-                         <ObjectUploader
-                           onGetUploadParameters={async (file) => {
-                             const res = await fetch("/api/uploads/request-url", {
-                               method: "POST",
-                               headers: { "Content-Type": "application/json" },
-                               body: JSON.stringify({
-                                 name: file.name,
-                                 size: file.size,
-                                 contentType: file.type,
-                               }),
-                             });
-                             const { uploadURL } = await res.json();
-                             return {
-                               method: "PUT",
-                               url: uploadURL,
-                               headers: { "Content-Type": file.type },
-                             };
-                           }}
-                           onComplete={(result) => {
-                             if (result.successful?.[0]) {
-                               const url = result.successful[0].uploadURL;
-                               if (url) handlePassportUpload(url);
-                             }
-                           }}
-                         >
-                           <div className="space-y-2 cursor-pointer">
-                             <Upload className="w-8 h-8 mx-auto text-muted-foreground" />
-                             <p className="text-sm text-muted-foreground">اضغط لرفع صورة الجواز</p>
-                           </div>
-                         </ObjectUploader>
+                  <div className="border-t pt-4 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Checkbox id="needsComp" checked={request.needsCompanion || false} onCheckedChange={(c) => updateRequest({ id: request.id, data: { needsCompanion: !!c } })} />
+                      <Label htmlFor="needsComp">إضافة مرافقين</Label>
+                    </div>
+                    {request.needsCompanion && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-3 bg-muted/20 rounded-lg space-y-3">
+                          <Input placeholder="اسم المرافق الأول" defaultValue={request.companion1Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion1Name: e.target.value } })} />
+                          <ObjectUploader onGetUploadParameters={async (file) => {
+                            const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                            const { uploadURL } = await res.json();
+                            return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                          }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion1PassportUrl: res.successful[0].uploadURL } })}>
+                            <Button variant="outline" size="sm" className="w-full text-xs">{request.companion1PassportUrl ? "تم رفع الجواز" : "رفع جواز المرافق"}</Button>
+                          </ObjectUploader>
+                        </div>
+                        <div className="p-3 bg-muted/20 rounded-lg space-y-3">
+                          <Input placeholder="اسم المرافق الثاني" defaultValue={request.companion2Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion2Name: e.target.value } })} />
+                          <ObjectUploader onGetUploadParameters={async (file) => {
+                            const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                            const { uploadURL } = await res.json();
+                            return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                          }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion2PassportUrl: res.successful[0].uploadURL } })}>
+                            <Button variant="outline" size="sm" className="w-full text-xs">{request.companion2PassportUrl ? "تم رفع الجواز" : "رفع جواز المرافق"}</Button>
+                          </ObjectUploader>
+                        </div>
                       </div>
                     )}
                   </div>
-                </Card>
-              </motion.div>
-
-              {/* Documents Download Section */}
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 }}
-                className="md:col-span-2"
-              >
-                <Card className="p-6 border-primary/10 shadow-sm bg-accent/5">
-                   <h3 className="font-bold text-lg mb-4 text-primary">المستندات والتذاكر</h3>
-                   <div className="grid sm:grid-cols-2 gap-4">
-                     <Button 
-                       variant="outline" 
-                       className="h-auto py-4 justify-start gap-4 border-primary/20 hover:bg-white"
-                       disabled={!request.visaUrl}
-                       onClick={() => request.visaUrl && window.open(request.visaUrl, '_blank')}
-                     >
-                       <div className="p-2 bg-primary/10 rounded-full text-primary">
-                         <Download className="w-5 h-5" />
-                       </div>
-                       <div className="text-right">
-                         <div className="font-bold">تأشيرة العمرة</div>
-                         <div className="text-xs text-muted-foreground">
-                           {request.visaUrl ? "جاهز للتحميل" : "قيد المعالجة..."}
-                         </div>
-                       </div>
-                     </Button>
-
-                     <Button 
-                       variant="outline" 
-                       className="h-auto py-4 justify-start gap-4 border-primary/20 hover:bg-white"
-                       disabled={!request.ticketUrl}
-                       onClick={() => request.ticketUrl && window.open(request.ticketUrl, '_blank')}
-                     >
-                       <div className="p-2 bg-primary/10 rounded-full text-primary">
-                         <Download className="w-5 h-5" />
-                       </div>
-                       <div className="text-right">
-                         <div className="font-bold">تذكرة الطيران</div>
-                         <div className="text-xs text-muted-foreground">
-                           {request.ticketUrl ? "جاهز للتحميل" : "قيد المعالجة..."}
-                         </div>
-                       </div>
-                     </Button>
-                   </div>
-                </Card>
-              </motion.div>
-            </div>
-          )}
-
-          {/* Companion Section */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-          >
-            <Card className="p-6 border-primary/10 shadow-sm">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3 text-primary">
-                  <div className="p-2 bg-primary/10 rounded-lg">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <h3 className="font-bold text-lg">المرافقين (اختياري)</h3>
+                  <Button className="w-full" onClick={() => setShowDocs(false)}>إغلاق</Button>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Label htmlFor="needsCompanion" className="text-sm font-medium">هل تحتاج إلى مرافق؟</Label>
-                  <Checkbox
-                    id="needsCompanion"
-                    checked={request.needsCompanion || false}
-                    onCheckedChange={(checked) => {
-                      updateRequest({ id: request.id, data: { needsCompanion: !!checked } });
-                    }}
-                    disabled={isUpdating}
-                  />
+              </DialogContent>
+            </Dialog>
+
+            {/* Box 4: Rules & Policies */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <DashboardBox icon={ShieldCheck} title="القواعد والسياسات">
+                  <p className="text-xs text-muted-foreground">يرجى الاطلاع والالتزام بالقواعد</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>القواعد والسياسات</DialogTitle>
+                </DialogHeader>
+                <div className="py-4 space-y-4 prose prose-sm max-h-[60vh] overflow-y-auto">
+                  {Array.isArray(materials) ? materials.filter((m: any) => m.type === 'instruction').map((m: any) => (
+                    <div key={m.id} className="p-4 bg-muted/20 rounded-lg border">
+                      <h4 className="font-bold text-primary mb-2">{m.title}</h4>
+                      <p className="text-sm">{m.url}</p>
+                    </div>
+                  )) : <p className="text-center italic">لا توجد قواعد حالياً</p>}
                 </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Box 5: Tickets & Visas */}
+            <DashboardBox icon={FileText} title="تذاكر والتأشيرات" disabled={!request.visaUrl && !request.ticketUrl}>
+              <div className="flex gap-2 justify-center w-full">
+                {request.visaUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.visaUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تأشيرة</Button>}
+                {request.ticketUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.ticketUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تذكرة</Button>}
               </div>
+              {(!request.visaUrl && !request.ticketUrl) && <p className="text-[10px] text-muted-foreground mt-2">ستظهر هنا عند توفرها</p>}
+            </DashboardBox>
 
-              <AnimatePresence>
-                {request.needsCompanion && (
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    className="space-y-6 overflow-hidden"
-                  >
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* Companion 1 */}
-                      <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-muted-foreground/10">
-                        <div className="space-y-2">
-                          <Label>اسم المرافق الأول</Label>
-                          <Input
-                            placeholder="الاسم الكامل"
-                            defaultValue={request.companion1Name || ""}
-                            onBlur={(e) => {
-                              if (e.target.value !== request.companion1Name) {
-                                updateRequest({ id: request.id, data: { companion1Name: e.target.value } });
-                              }
-                            }}
-                            disabled={isUpdating}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">جواز سفر المرافق الأول</Label>
-                          {request.companion1PassportUrl ? (
-                            <div className="flex items-center justify-between bg-white p-2 rounded-lg border text-xs">
-                              <span className="text-green-600 font-medium">تم الرفع</span>
-                              <a href={request.companion1PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline">عرض</a>
-                            </div>
-                          ) : (
-                            <ObjectUploader
-                              onGetUploadParameters={async (file) => {
-                                const res = await fetch("/api/uploads/request-url", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
-                                });
-                                const { uploadURL } = await res.json();
-                                return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                              }}
-                              onComplete={(res) => {
-                                if (res.successful?.[0]?.uploadURL) {
-                                  updateRequest({ id: request.id, data: { companion1PassportUrl: res.successful[0].uploadURL } });
-                                }
-                              }}
-                            >
-                              <Button variant="outline" size="sm" className="w-full text-xs" disabled={isUpdating}>
-                                <Upload className="w-3 h-3 ml-2" /> رفع الجواز
-                              </Button>
-                            </ObjectUploader>
-                          )}
-                        </div>
+            {/* Box 6: Trip Colleagues */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <DashboardBox icon={Users} title="زملاء الرحلة" disabled={!request.assignedColleagueIds?.length}>
+                  <p className="text-xs text-muted-foreground">{request.assignedColleagueIds?.length || 0} زملاء متاحين</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>زملاء الرحلة</DialogTitle>
+                </DialogHeader>
+                <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                  {Array.isArray(colleagues) && colleagues.length ? colleagues.map((c: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-muted/10 rounded-xl border">
+                      <div>
+                        <div className="font-bold">{c.fullName}</div>
+                        <div className="text-xs text-muted-foreground">{c.department}</div>
                       </div>
-
-                      {/* Companion 2 */}
-                      <div className="space-y-4 p-4 rounded-xl bg-muted/30 border border-muted-foreground/10">
-                        <div className="space-y-2">
-                          <Label>اسم المرافق الثاني</Label>
-                          <Input
-                            placeholder="الاسم الكامل"
-                            defaultValue={request.companion2Name || ""}
-                            onBlur={(e) => {
-                              if (e.target.value !== request.companion2Name) {
-                                updateRequest({ id: request.id, data: { companion2Name: e.target.value } });
-                              }
-                            }}
-                            disabled={isUpdating}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">جواز سفر المرافق الثاني</Label>
-                          {request.companion2PassportUrl ? (
-                            <div className="flex items-center justify-between bg-white p-2 rounded-lg border text-xs">
-                              <span className="text-green-600 font-medium">تم الرفع</span>
-                              <a href={request.companion2PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline">عرض</a>
-                            </div>
-                          ) : (
-                            <ObjectUploader
-                              onGetUploadParameters={async (file) => {
-                                const res = await fetch("/api/uploads/request-url", {
-                                  method: "POST",
-                                  headers: { "Content-Type": "application/json" },
-                                  body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
-                                });
-                                const { uploadURL } = await res.json();
-                                return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                              }}
-                              onComplete={(res) => {
-                                if (res.successful?.[0]?.uploadURL) {
-                                  updateRequest({ id: request.id, data: { companion2PassportUrl: res.successful[0].uploadURL } });
-                                }
-                              }}
-                            >
-                              <Button variant="outline" size="sm" className="w-full text-xs" disabled={isUpdating}>
-                                <Upload className="w-3 h-3 ml-2" /> رفع الجواز
-                              </Button>
-                            </ObjectUploader>
-                          )}
-                        </div>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => window.open(`https://wa.me/${c.phone?.replace(/[^0-9]/g, '')}`, '_blank')}>
+                          <MessageCircle className="w-5 h-5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => window.location.href = `tel:${c.phone}`}>
+                          <Phone className="w-5 h-5" />
+                        </Button>
                       </div>
                     </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </Card>
-          </motion.div>
+                  )) : <p className="text-center italic">سيقوم الأدمن بإضافة الزملاء قريباً</p>}
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
       </Layout>
     </ProtectedRoute>

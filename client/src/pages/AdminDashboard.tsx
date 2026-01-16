@@ -10,11 +10,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Check, X, Upload, FileText, Mail } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Loader2, Check, X, Upload, FileText, Mail, Users } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { api, buildUrl } from "@shared/routes";
+import { api } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -23,7 +24,16 @@ export default function AdminDashboard() {
   const { mutate: updateRequest } = useUpdateRequest();
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState("");
+  const [selectedColleagues, setSelectedColleagues] = useState<number[]>([]);
   const { toast } = useToast();
+
+  const { data: users } = useQuery<any[]>({
+    queryKey: ["/api/users"],
+    queryFn: async () => {
+      const res = await fetch("/api/users");
+      return res.json();
+    }
+  });
 
   const { data: emailSettings, isLoading: isLoadingEmail } = useQuery({
     queryKey: [api.email.getSettings.path],
@@ -299,6 +309,45 @@ export default function AdminDashboard() {
                        </Button>
                      </div>
                   </ObjectUploader>
+
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={() => {
+                        setSelectedColleagues(req.assignedColleagueIds || []);
+                      }}>
+                        <Users className="w-3 h-3 mr-1" /> تعيين زملاء ({req.assignedColleagueIds?.length || 0})
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>تعيين زملاء الرحلة لـ {req.user.fullName}</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                        {users?.filter(u => u.role === 'employee' && u.id !== req.userId).map(u => (
+                          <div key={u.id} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                            <Checkbox 
+                              id={`user-${u.id}`} 
+                              checked={selectedColleagues.includes(u.id)}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  setSelectedColleagues([...selectedColleagues, u.id]);
+                                } else {
+                                  setSelectedColleagues(selectedColleagues.filter(id => id !== u.id));
+                                }
+                              }}
+                            />
+                            <label htmlFor={`user-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                              {u.fullName} - {u.department}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      <Button className="w-full" onClick={() => {
+                        updateRequest({ id: req.id, data: { assignedColleagueIds: selectedColleagues } });
+                        toast({ title: "تم الحفظ", description: "تم تعيين الزملاء بنجاح" });
+                      }}>حفظ التعديلات</Button>
+                    </DialogContent>
+                  </Dialog>
                 </div>
               )}
             </div>

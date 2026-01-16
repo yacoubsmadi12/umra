@@ -5,18 +5,20 @@ import {
   type UmrahRequest, type InsertUmrahRequest,
   type TripMaterial, type EmailSettings, type InsertEmailSettings
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, inArray } from "drizzle-orm";
 
 export interface IStorage {
   // User Auth
   getUser(id: number): Promise<User | undefined>;
   getUserByEmployeeId(employeeId: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  getUsers(): Promise<User[]>;
+  getUsersByIds(ids: number[]): Promise<User[]>;
   
   // Requests
   createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest>;
   getRequestByUserId(userId: number): Promise<UmrahRequest | undefined>;
-  getAllRequests(): Promise<UmrahRequest & { user: User }[]>; // Join with user
+  getAllRequests(): Promise<any>;
   updateRequest(id: number, updates: Partial<UmrahRequest>): Promise<UmrahRequest>;
   
   // Materials
@@ -47,6 +49,15 @@ export class DatabaseStorage implements IStorage {
     return newUser;
   }
 
+  async getUsers(): Promise<User[]> {
+    return await db.select().from(users);
+  }
+
+  async getUsersByIds(ids: number[]): Promise<User[]> {
+    if (!ids.length) return [];
+    return await db.select().from(users).where(inArray(users.id, ids));
+  }
+
   async createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest> {
     const [newRequest] = await db.insert(umrahRequests).values({ 
       userId, 
@@ -62,7 +73,6 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllRequests(): Promise<any> {
-    // Drizzle relation or manual join
     return await db.select({
       id: umrahRequests.id,
       userId: umrahRequests.userId,
@@ -70,6 +80,7 @@ export class DatabaseStorage implements IStorage {
       checklistCompleted: umrahRequests.checklistCompleted,
       paymentMethod: umrahRequests.paymentMethod,
       passportUrl: umrahRequests.passportUrl,
+      militaryServiceUrl: umrahRequests.militaryServiceUrl,
       visaUrl: umrahRequests.visaUrl,
       ticketUrl: umrahRequests.ticketUrl,
       adminComments: umrahRequests.adminComments,
@@ -78,6 +89,7 @@ export class DatabaseStorage implements IStorage {
       companion1PassportUrl: umrahRequests.companion1PassportUrl,
       companion2Name: umrahRequests.companion2Name,
       companion2PassportUrl: umrahRequests.companion2PassportUrl,
+      assignedColleagueIds: umrahRequests.assignedColleagueIds,
       createdAt: umrahRequests.createdAt,
       user: users
     })
