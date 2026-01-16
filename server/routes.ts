@@ -239,6 +239,28 @@ async function seedDatabase() {
       gender: "male"
     });
 
-    console.log("Database seeded with Admin only.");
+    // Create 3 Employee accounts as requested
+    const employees = [
+      { id: "1000", name: "Employee 1000", email: "emp1000@zain.com" },
+      { id: "1001", name: "Employee 1001", email: "emp1001@zain.com" },
+      { id: "1002", name: "Employee 1002", email: "emp1002@zain.com" },
+      { id: "1003", name: "Employee 1003", email: "emp1003@zain.com" }
+    ];
+
+    for (const emp of employees) {
+      await storage.createUser({
+        employeeId: emp.id,
+        password: "123456",
+        fullName: emp.name,
+        email: emp.email,
+        phone: "0790000000",
+        jobTitle: "Employee",
+        department: "General",
+        role: "employee",
+        gender: "male"
+      });
+    }
+
+    console.log("Database seeded with Admin and 4 Employees.");
   }
 }
