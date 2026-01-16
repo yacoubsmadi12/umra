@@ -31,8 +31,6 @@ export function Layout({ children, isAdmin }: LayoutProps) {
       ]
     : [
         { href: "/dashboard", label: "الرئيسية", icon: Home },
-        { href: "/booklet", label: "الدليل الإرشادي", icon: BookOpen },
-        { href: "/colleagues", label: "الزملاء المشاركون", icon: Users },
       ];
 
   return (
