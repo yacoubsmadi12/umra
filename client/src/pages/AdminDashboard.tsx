@@ -330,11 +330,14 @@ export default function AdminDashboard() {
                               id={`user-${u.id}`} 
                               checked={selectedColleagues.includes(u.id)}
                               onCheckedChange={(checked) => {
-                                if (checked) {
-                                  setSelectedColleagues([...selectedColleagues, u.id]);
-                                } else {
-                                  setSelectedColleagues(selectedColleagues.filter(id => id !== u.id));
-                                }
+                                const id = u.id;
+                                setSelectedColleagues(prev => {
+                                  if (checked) {
+                                    return prev.includes(id) ? prev : [...prev, id];
+                                  } else {
+                                    return prev.filter(item => item !== id);
+                                  }
+                                });
                               }}
                             />
                             <label htmlFor={`user-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
