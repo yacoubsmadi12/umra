@@ -116,27 +116,35 @@ export default function Dashboard() {
               <DialogTrigger asChild>
                 <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={request.status !== 'approved'}>
                   <p className="text-xs text-muted-foreground">
-                    {request.paymentMethod ? "تم تحديد: " + request.paymentMethod : "اختر الطريقة المناسبة"}
+                    {request.paymentMethod ? "تم تحديد: " + (
+                      request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
+                      request.paymentMethod === 'entertainment_allowance' ? 'خصم من بدل الترفيه' :
+                      request.paymentMethod === 'cash' ? 'كاش' :
+                      request.paymentMethod === 'cliQ' ? 'تحويل كليك' : request.paymentMethod
+                    ) : "اختر الطريقة المناسبة"}
                   </p>
                 </DashboardBox>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-md">
+              <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
                 <DialogHeader>
-                  <DialogTitle>تحديد طريقة الدفع</DialogTitle>
+                  <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
                 </DialogHeader>
-                <div className="space-y-4 py-4">
-                  <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="اختر الطريقة" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="salary_deduction">خصم من الراتب</SelectItem>
-                      <SelectItem value="entertainment_allowance">خصم من بدل الترفيه</SelectItem>
-                      <SelectItem value="cash">كاش</SelectItem>
-                      <SelectItem value="cliQ">تحويل كليك</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button className="w-full" onClick={() => setShowPayment(false)}>تم</Button>
+                <div className="space-y-6 py-6">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium pr-1">خيار الدفع</Label>
+                    <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
+                      <SelectTrigger className="w-full h-12 bg-muted/50 border-primary/20 hover:border-primary/40 transition-colors">
+                        <SelectValue placeholder="اختر الطريقة" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-slate-900 border-primary/10 shadow-xl">
+                        <SelectItem value="salary_deduction" className="h-10 cursor-pointer focus:bg-primary/5">خصم من الراتب</SelectItem>
+                        <SelectItem value="entertainment_allowance" className="h-10 cursor-pointer focus:bg-primary/5">خصم من بدل الترفيه</SelectItem>
+                        <SelectItem value="cash" className="h-10 cursor-pointer focus:bg-primary/5">كاش</SelectItem>
+                        <SelectItem value="cliQ" className="h-10 cursor-pointer focus:bg-primary/5">تحويل كليك</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/20" onClick={() => setShowPayment(false)}>حفظ وإغلاق</Button>
                 </div>
               </DialogContent>
             </Dialog>
