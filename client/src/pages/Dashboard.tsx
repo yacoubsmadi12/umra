@@ -74,7 +74,10 @@ export default function Dashboard() {
     <motion.div whileHover={!disabled ? { scale: 1.02 } : {}} whileTap={!disabled ? { scale: 0.98 } : {}}>
       <Card 
         className={`p-6 cursor-pointer h-full transition-all border-primary/10 hover:border-primary/30 shadow-sm hover:shadow-md ${disabled ? 'opacity-50 grayscale' : ''}`}
-        onClick={() => !disabled && onClick?.()}
+        onClick={(e) => {
+          if (disabled) return;
+          if (onClick) onClick(e);
+        }}
       >
         <div className="flex flex-col items-center text-center gap-4">
           <div className="p-4 bg-primary/5 rounded-2xl text-primary">
