@@ -62,13 +62,14 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    if (emailSettings) {
+    if (emailSettings && typeof emailSettings === 'object') {
+      const settings = emailSettings as any;
       setSmtpForm({
-        host: emailSettings.host,
-        port: emailSettings.port,
-        user: emailSettings.user,
-        password: emailSettings.password,
-        fromEmail: emailSettings.fromEmail
+        host: settings.host || "",
+        port: settings.port || 587,
+        user: settings.user || "",
+        password: settings.password || "",
+        fromEmail: settings.fromEmail || ""
       });
     }
   }, [emailSettings]);
@@ -280,7 +281,7 @@ export default function AdminDashboard() {
                        return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
                      }}
                      onComplete={(res) => {
-                       if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL);
+                       if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL!);
                      }}
                   >
                      <div className="w-full">
@@ -300,7 +301,7 @@ export default function AdminDashboard() {
                        return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
                      }}
                      onComplete={(res) => {
-                       if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL);
+                       if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL!);
                      }}
                   >
                      <div className="w-full">
