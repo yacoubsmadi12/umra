@@ -239,36 +239,6 @@ async function seedDatabase() {
       gender: "male"
     });
 
-    // Create Employee 1
-    const emp1 = await storage.createUser({
-      employeeId: "1001",
-      password: "123456",
-      fullName: "Ahmad Al-Zain",
-      email: "ahmad@zain.com",
-      phone: "0791111111",
-      jobTitle: "Software Engineer",
-      department: "IT",
-      role: "employee",
-      gender: "male"
-    });
-
-    // Create Employee 2
-    await storage.createUser({
-      employeeId: "1002",
-      password: "123456",
-      fullName: "Sara Jordan",
-      email: "sara@zain.com",
-      phone: "0792222222",
-      jobTitle: "Marketing Specialist",
-      department: "Marketing",
-      role: "employee",
-      gender: "female"
-    });
-
-    // Seed Materials
-    await storage.createMaterial({ title: "دليل العمرة - الاستعداد", type: "booklet_page", url: "/assets/page1.png", order: 1 });
-    await storage.createMaterial({ title: "القواعد العامة للرحلة", type: "instruction", url: "يرجى الالتزام بمواعيد التجمع والحفاظ على نظافة الحافلة.", order: 1 });
-    
-    console.log("Database seeded successfully.");
+    console.log("Database seeded with Admin only.");
   }
 }
