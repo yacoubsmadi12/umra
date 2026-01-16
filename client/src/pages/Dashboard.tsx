@@ -16,7 +16,7 @@ import { ObjectUploader } from "@/components/ObjectUploader";
 import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard, Users, BookOpen, ShieldCheck, FileText, Phone, MessageCircle } from "lucide-react";
 import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import React, { useState } from "react";
 
 function StatusCard({ status, comments }: { status: string, comments?: string | null }) {
   const config = {
@@ -70,14 +70,16 @@ export default function Dashboard() {
 
   if (!request) return <Redirect to="/register" />;
 
-  const DashboardBox = ({ icon: Icon, title, onClick, disabled = false, children }: any) => (
+  const DashboardBox = React.forwardRef(({ icon: Icon, title, onClick, disabled = false, children, ...props }: any, ref: any) => (
     <motion.div whileHover={!disabled ? { scale: 1.02 } : {}} whileTap={!disabled ? { scale: 0.98 } : {}}>
       <Card 
+        ref={ref}
         className={`p-6 cursor-pointer h-full transition-all border-primary/10 hover:border-primary/30 shadow-sm hover:shadow-md ${disabled ? 'opacity-50 grayscale' : ''}`}
         onClick={(e) => {
           if (disabled) return;
           if (onClick) onClick(e);
         }}
+        {...props}
       >
         <div className="flex flex-col items-center text-center gap-4">
           <div className="p-4 bg-primary/5 rounded-2xl text-primary">
@@ -88,7 +90,8 @@ export default function Dashboard() {
         </div>
       </Card>
     </motion.div>
-  );
+  ));
+  DashboardBox.displayName = "DashboardBox";
 
   return (
     <ProtectedRoute>
