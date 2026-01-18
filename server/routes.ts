@@ -8,7 +8,10 @@ import createMemoryStore from "memorystore";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { OpenAI } from "openai";
 
-const openai = new OpenAI();
+const openai = new OpenAI({
+  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
+  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
+});
 
 async function extractPassportData(url: string): Promise<string> {
   try {
