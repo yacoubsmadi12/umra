@@ -377,6 +377,7 @@ export default function AdminDashboard() {
               <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
               <TabsTrigger value="approved">المقبولة</TabsTrigger>
               <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
+              <TabsTrigger value="registered">المسجلون</TabsTrigger>
               <TabsTrigger value="all">الكل</TabsTrigger>
               <TabsTrigger value="settings">الإعدادات</TabsTrigger>
             </TabsList>
@@ -385,6 +386,35 @@ export default function AdminDashboard() {
               <TabsContent value="pending"><RequestList filterStatus="pending" /></TabsContent>
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
+              <TabsContent value="registered">
+                <div className="grid gap-4">
+                  {requests?.filter(r => r.status === 'approved').map(req => (
+                    <Card key={req.id} className="p-6">
+                      <h3 className="font-bold text-lg mb-4">{req.user.fullName}</h3>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-xs">بيانات صاحب الطلب</Label>
+                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
+                            {req.passportData || "لم يتم استخراج البيانات بعد"}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">بيانات المرافق 1</Label>
+                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
+                            {req.companion1PassportData || "لا يوجد بيانات"}
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-xs">بيانات المرافق 2</Label>
+                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
+                            {req.companion2PassportData || "لا يوجد بيانات"}
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
               <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
               <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
             </div>

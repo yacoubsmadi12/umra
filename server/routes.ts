@@ -6,7 +6,30 @@ import { z } from "zod";
 import session from "express-session";
 import createMemoryStore from "memorystore";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
-import nodemailer from "nodemailer";
+import { OpenAI } from "openai";
+
+const openai = new OpenAI();
+
+async function extractPassportData(url: string): Promise<string> {
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4o",
+      messages: [
+        {
+          role: "user",
+          content: [
+            { type: "text", text: "Extract all relevant information from this passport image. Return the data in a clear, readable format in Arabic. Focus on: Full Name, Passport Number, Nationality, Date of Birth, Expiry Date." },
+            { type: "image_url", image_url: { url } }
+          ],
+        },
+      ],
+    });
+    return response.choices[0].message.content || "Failed to extract data";
+  } catch (error) {
+    console.error("AI Extraction Error:", error);
+    return "Error extracting data";
+  }
+}
 
 declare module 'express-session' {
   interface SessionData {
@@ -162,6 +185,23 @@ export async function registerRoutes(
     }
 
     const updated = await storage.updateRequest(id, updates);
+
+    // AI Data Extraction for Passports
+    if (updates.passportUrl) {
+      extractPassportData(updates.passportUrl).then(data => 
+        storage.updateRequest(id, { passportData: data })
+      );
+    }
+    if (updates.companion1PassportUrl) {
+      extractPassportData(updates.companion1PassportUrl).then(data => 
+        storage.updateRequest(id, { companion1PassportData: data })
+      );
+    }
+    if (updates.companion2PassportUrl) {
+      extractPassportData(updates.companion2PassportUrl).then(data => 
+        storage.updateRequest(id, { companion2PassportData: data })
+      );
+    }
 
     // Send Email on status change
     if (updates.status) {
