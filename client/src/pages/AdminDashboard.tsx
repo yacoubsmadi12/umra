@@ -367,22 +367,28 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           <header className="flex items-center justify-between">
             <h1 className="text-2xl font-bold font-tajawal text-primary">لوحة تحكم المشرف</h1>
-            <Badge variant="outline" className="text-lg px-4 py-1">
-              {requests?.length} طلبات
-            </Badge>
+            <div className="flex items-center gap-4">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Mail className="w-4 h-4" /> إعدادات البريد
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>إعدادات البريد الإلكتروني</DialogTitle>
+                  </DialogHeader>
+                  <EmailSettingsForm />
+                </DialogContent>
+              </Dialog>
+              <Badge variant="outline" className="text-lg px-4 py-1">
+                {requests?.length} طلبات
+              </Badge>
+            </div>
           </header>
 
-          <Tabs defaultValue="pending" className="w-full">
-            <TabsList className="w-full grid grid-cols-5 lg:w-[500px]">
-              <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
-              <TabsTrigger value="approved">المقبولة</TabsTrigger>
-              <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
-              <TabsTrigger value="registered">المسجلون</TabsTrigger>
-              <TabsTrigger value="all">الكل</TabsTrigger>
-              <TabsTrigger value="settings">الإعدادات</TabsTrigger>
-            </TabsList>
-            
-            <div className="mt-6">
+          <Tabs defaultValue="pending" className="w-full flex flex-col">
+            <div className="flex-1 order-1 mt-6">
               <TabsContent value="pending"><RequestList filterStatus="pending" /></TabsContent>
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
@@ -443,6 +449,16 @@ export default function AdminDashboard() {
               </TabsContent>
               <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
               <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
+            </div>
+
+            <div className="flex justify-end order-2 mt-8 border-t pt-6">
+              <TabsList className="grid grid-cols-5 lg:w-[500px]">
+                <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
+                <TabsTrigger value="approved">المقبولة</TabsTrigger>
+                <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
+                <TabsTrigger value="registered">المسجلون</TabsTrigger>
+                <TabsTrigger value="all">الكل</TabsTrigger>
+              </TabsList>
             </div>
           </Tabs>
         </div>
