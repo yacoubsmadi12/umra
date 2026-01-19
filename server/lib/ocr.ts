@@ -18,7 +18,7 @@ export async function extractPassportData(url: string): Promise<string> {
     const buffer = Buffer.from(response.data, 'binary');
 
     // Initialize Tesseract worker
-    const worker = await createWorker(['eng', 'ara']);
+    const worker = await createWorker(['eng']);
     const { data: { text } } = await worker.recognize(buffer);
     await worker.terminate();
 
@@ -26,7 +26,24 @@ export async function extractPassportData(url: string): Promise<string> {
       return "لم يتم العثور على بيانات نصية في الصورة";
     }
 
-    // Clean up and format the text a bit
+    // Attempt to find MRZ lines
+    const lines = text.split('\n').map(l => l.trim().replace(/\s/g, '')).filter(l => l.length >= 30);
+    const mrzLines = lines.filter(line => /^[A-Z0-9<]{30,}$/.test(line));
+
+    if (mrzLines.length >= 2) {
+      try {
+        const { parse } = await import('mrz');
+        const result = parse(mrzLines);
+        if (result && result.fields) {
+          const f = result.fields;
+          return `الاسم: ${f.firstName} ${f.lastName}\nالجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\nرقم الجواز: ${f.documentNumber}\nتاريخ الانتهاء: ${f.expirationDate}\nالجنسية: ${f.nationality}\nالرقم الوطني: ${f.optional1 || 'غير متوفر'}`;
+        }
+      } catch (e) {
+        console.error("MRZ Parsing Error:", e);
+      }
+    }
+
+    // Clean up and format the text a bit if MRZ parsing fails
     return text.split('\n').filter(line => line.trim().length > 0).join('\n');
   } catch (error: any) {
     console.error("Local OCR Extraction Error:", error);
