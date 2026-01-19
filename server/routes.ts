@@ -91,6 +91,7 @@ export async function registerRoutes(
 
       res.status(201).json(request);
     } catch (err) {
+      console.error("Error creating request:", err);
       if (err instanceof z.ZodError) {
         return res.status(400).json({ message: err.errors[0].message });
       }

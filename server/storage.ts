@@ -61,8 +61,9 @@ export class DatabaseStorage implements IStorage {
   async createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest> {
     const [newRequest] = await db.insert(umrahRequests).values({ 
       userId, 
-      checklistCompleted: request.checklistCompleted || false,
-      status: 'pending'
+      checklistCompleted: request.checklistCompleted ?? false,
+      status: 'pending',
+      updatedAt: new Date()
     }).returning();
     return newRequest;
   }
