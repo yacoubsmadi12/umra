@@ -26,6 +26,15 @@ export default function AdminDashboard() {
   const [rejectReason, setRejectReason] = useState("");
   const [selectedColleagues, setSelectedColleagues] = useState<number[]>([]);
   const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("pending");
+
+  useEffect(() => {
+    const handleTabChange = (e: any) => {
+      setActiveTab(e.detail);
+    };
+    window.addEventListener('admin-tab-change', handleTabChange);
+    return () => window.removeEventListener('admin-tab-change', handleTabChange);
+  }, []);
 
   const { data: users } = useQuery<any[]>({
     queryKey: ["/api/users"],
@@ -387,8 +396,8 @@ export default function AdminDashboard() {
             </div>
           </header>
 
-          <Tabs defaultValue="pending" className="w-full flex flex-col">
-            <div className="flex-1 order-1 mt-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="mt-6">
               <TabsContent value="pending"><RequestList filterStatus="pending" /></TabsContent>
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
@@ -449,16 +458,6 @@ export default function AdminDashboard() {
               </TabsContent>
               <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
               <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
-            </div>
-
-            <div className="flex justify-end order-2 mt-8 border-t pt-6">
-              <TabsList className="grid grid-cols-5 lg:w-[500px]">
-                <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
-                <TabsTrigger value="approved">المقبولة</TabsTrigger>
-                <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
-                <TabsTrigger value="registered">المسجلون</TabsTrigger>
-                <TabsTrigger value="all">الكل</TabsTrigger>
-              </TabsList>
             </div>
           </Tabs>
         </div>

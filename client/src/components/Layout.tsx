@@ -84,24 +84,49 @@ export function Layout({ children, isAdmin }: LayoutProps) {
                 <p className="text-xs text-muted-foreground mt-1">{user?.jobTitle}</p>
               </div>
 
-              <nav className="flex-1 space-y-2">
-                {navItems.map((item) => (
-                  <Link key={item.href} href={item.href}>
-                    <div
-                      onClick={() => setIsSidebarOpen(false)}
-                      className={cn(
-                        "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer",
-                        location === item.href
-                          ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                      )}
-                    >
-                      <item.icon className="w-5 h-5" />
-                      <span className="font-medium">{item.label}</span>
-                    </div>
-                  </Link>
-                ))}
-              </nav>
+          <nav className="flex-1 space-y-2">
+            {navItems.map((item) => (
+              <Link key={item.href} href={item.href}>
+                <div
+                  onClick={() => setIsSidebarOpen(false)}
+                  className={cn(
+                    "flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer",
+                    location === item.href
+                      ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                </div>
+              </Link>
+            ))}
+          </nav>
+
+          {isAdmin && location === "/admin" && (
+            <div className="mt-6 pt-6 border-t border-primary/10 space-y-2">
+              <p className="text-xs font-bold text-muted-foreground px-4 mb-2">تصفية الطلبات</p>
+              {[
+                { id: 'pending', label: 'قيد الانتظار' },
+                { id: 'approved', label: 'المقبولة' },
+                { id: 'rejected', label: 'المرفوضة' },
+                { id: 'registered', label: 'المسجلون' },
+                { id: 'all', label: 'الكل' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    const event = new CustomEvent('admin-tab-change', { detail: tab.id });
+                    window.dispatchEvent(event);
+                  }}
+                  className="w-full flex items-center gap-4 px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                >
+                  <div className="w-2 h-2 rounded-full bg-primary/40" />
+                  <span>{tab.label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
               <button
                 onClick={() => logout()}
