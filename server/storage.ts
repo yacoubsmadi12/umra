@@ -76,8 +76,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUsersByIds(ids: number[]): Promise<User[]> {
-    if (!ids.length) return [];
-    return await db.select().from(users).where(inArray(users.id, ids));
+    if (!ids || !ids.length) return [];
+    // Filter out potential non-numeric values and ensure we have an array of integers
+    const validIds = ids.map(id => Number(id)).filter(id => !isNaN(id));
+    if (!validIds.length) return [];
+    return await db.select().from(users).where(inArray(users.id, validIds));
   }
 
   async createRequest(userId: number, request: Partial<InsertUmrahRequest>): Promise<UmrahRequest> {

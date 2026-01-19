@@ -482,7 +482,7 @@ export default function AdminDashboard() {
               </div>
               <Button className="w-full" onClick={() => {
                 if (colleaguesRequest) {
-                  updateRequest({ id: colleaguesRequest.id, data: { assignedColleagueIds: selectedColleagues } });
+                  updateRequest({ id: colleaguesRequest.id, data: { assignedColleagueIds: selectedColleagues.map(id => Number(id)) } });
                   toast({ title: "تم الحفظ", description: "تم تعيين الزملاء بنجاح" });
                   setIsColleaguesDialogOpen(false);
                 }

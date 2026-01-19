@@ -52,7 +52,10 @@ export default function Dashboard() {
   const { data: request, isLoading } = useMyRequest();
   const { mutate: updateRequest, isPending: isUpdating } = useUpdateRequest();
   const { data: materials } = useQuery({ queryKey: [api.materials.list.path] });
-  const { data: colleagues } = useQuery({ queryKey: [api.colleagues.list.path] });
+  const { data: colleagues } = useQuery({ 
+    queryKey: [api.colleagues.list.path],
+    enabled: !!request?.assignedColleagueIds?.length 
+  });
   const [showPayment, setShowPayment] = useState(false);
   const [showDocs, setShowDocs] = useState(false);
 
