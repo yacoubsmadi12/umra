@@ -129,8 +129,10 @@ export async function registerRoutes(
         // Rule 1: Already accepted last time -> Auto Reject
         requestStatus = 'rejected';
         adminComments = "تم رفض الطلب تلقائياً لأنك كنت من ضمن المقبولين في العمرة الماضية.";
-      } else if (user.jobTitle.toLowerCase().includes('full time') || true) { 
-        // Rule 2 placeholder logic
+      } else if (pastParticipant && pastParticipant.contractType === 'full_time' && pastParticipant.yearsOfExperience > 3) { 
+        // Rule 2: 3+ years experience & full-time & not accepted last time (implied by no auto-reject) -> Auto Approve
+        requestStatus = 'approved';
+        adminComments = "تم قبول طلبك تلقائياً بناءً على سنوات الخبرة ونوع العقد.";
       }
 
       const request = await storage.createRequest(req.session.userId!, { ...input, status: requestStatus, adminComments } as any);
@@ -138,25 +140,26 @@ export async function registerRoutes(
       if (requestStatus === 'rejected') {
         await sendEmail(user.email, "Request Status Updated", adminComments);
       }
-      const id = request.id;
-      const triggerAi = async (url: string, field: string) => {
+      // Trigger OCR for passports if present in initial request
+      const reqId = request.id;
+      const triggerOCR = async (url: string, field: string) => {
         try {
           const extractedData = await extractPassportData(url);
-          await storage.updateRequest(id, { [field]: extractedData });
+          await storage.updateRequest(reqId, { [field]: extractedData });
         } catch (e) {
           console.error(`Initial OCR Error for ${field}:`, e);
-          await storage.updateRequest(id, { [field]: "خطأ في استخراج البيانات برمجياً." });
+          await storage.updateRequest(reqId, { [field]: "خطأ في استخراج البيانات برمجياً." });
         }
       };
 
-      if (input.passportUrl) triggerAi(input.passportUrl, 'passportData');
-      if (input.companion1PassportUrl) triggerAi(input.companion1PassportUrl, 'companion1PassportData');
-      if (input.companion2PassportUrl) triggerAi(input.companion2PassportUrl, 'companion2PassportData');
+      if (input.passportUrl) triggerOCR(input.passportUrl, 'passportData');
+      if (input.companion1PassportUrl) triggerOCR(input.companion1PassportUrl, 'companion1PassportData');
+      if (input.companion2PassportUrl) triggerOCR(input.companion2PassportUrl, 'companion2PassportData');
       
       // Send Email Notification
-      const user = await storage.getUser(req.session.userId!);
-      if (user) {
-        await sendEmail(user.email, "Registration Received", "Thank you for registering for the Umrah program. We will review your request shortly.");
+      const requestOwner = await storage.getUser(req.session.userId!);
+      if (requestOwner) {
+        await sendEmail(requestOwner.email, "Registration Received", "Thank you for registering for the Umrah program. We will review your request shortly.");
       }
 
       res.status(201).json(request);
