@@ -10,6 +10,8 @@ import { OpenAI } from "openai";
 
 import axios from "axios";
 
+import { ObjectStorageService } from "./replit_integrations/object_storage";
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -17,9 +19,18 @@ const openai = new OpenAI({
 
 async function extractPassportData(url: string): Promise<string> {
   try {
-    // OpenAI cannot access .private URLs directly.
-    // We fetch the image and send it as base64.
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    // Determine the object path from the URL
+    // URL format: https://.../.private/uploads/uuid
+    const urlObj = new URL(url);
+    const pathParts = urlObj.pathname.split('/');
+    const objectPath = pathParts.slice(pathParts.indexOf('.private')).join('/');
+
+    // Generate a signed URL for internal access
+    const storageService = await ObjectStorageService.getInstance();
+    const signedUrl = await storageService.getSignedUrl(objectPath);
+
+    // Fetch the image using the signed URL
+    const response = await axios.get(signedUrl, { responseType: 'arraybuffer' });
     const buffer = Buffer.from(response.data, 'binary');
     const base64Image = buffer.toString('base64');
     const mimeType = response.headers['content-type'] || 'image/jpeg';
