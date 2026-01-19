@@ -83,6 +83,22 @@ export async function registerRoutes(
       const input = api.requests.create.input.parse(req.body);
       const request = await storage.createRequest(req.session.userId!, input);
       
+      // Trigger OCR for passports if present in initial request
+      const id = request.id;
+      const triggerAi = async (url: string, field: string) => {
+        try {
+          const extractedData = await extractPassportData(url);
+          await storage.updateRequest(id, { [field]: extractedData });
+        } catch (e) {
+          console.error(`Initial OCR Error for ${field}:`, e);
+          await storage.updateRequest(id, { [field]: "خطأ في استخراج البيانات برمجياً." });
+        }
+      };
+
+      if (input.passportUrl) triggerAi(input.passportUrl, 'passportData');
+      if (input.companion1PassportUrl) triggerAi(input.companion1PassportUrl, 'companion1PassportData');
+      if (input.companion2PassportUrl) triggerAi(input.companion2PassportUrl, 'companion2PassportData');
+      
       // Send Email Notification
       const user = await storage.getUser(req.session.userId!);
       if (user) {
@@ -128,13 +144,14 @@ export async function registerRoutes(
     // AI Data Extraction for Passports
     const triggerAi = async (url: string, field: string) => {
       try {
-        console.log(`Starting AI Extraction for ${field} (URL: ${url})`);
+        console.log(`Starting OCR Extraction for ${field} (URL: ${url})`);
         const extractedData = await extractPassportData(url);
+        console.log(`OCR Extraction Result for ${field}:`, extractedData);
         await storage.updateRequest(id, { [field]: extractedData });
-        console.log(`AI Extraction completed for ${field}`);
+        console.log(`OCR Extraction updated in DB for ${field}`);
       } catch (e) {
         console.error(`Failed to extract data for ${field}:`, e);
-        await storage.updateRequest(id, { [field]: "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً." });
+        await storage.updateRequest(id, { [field]: "خطأ في استخراج البيانات برمجياً: يرجى مراجعة الجواز يدوياً." });
       }
     };
 

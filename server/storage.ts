@@ -63,6 +63,9 @@ export class DatabaseStorage implements IStorage {
       userId, 
       checklistCompleted: request.checklistCompleted ?? false,
       status: 'pending',
+      passportUrl: request.passportUrl,
+      companion1PassportUrl: request.companion1PassportUrl,
+      companion2PassportUrl: request.companion2PassportUrl,
       updatedAt: new Date()
     }).returning();
     return newRequest;
