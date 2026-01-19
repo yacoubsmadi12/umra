@@ -368,17 +368,9 @@ export default function AdminDashboard() {
                   <div className="grid grid-cols-2 gap-2">
                     <div className="w-full">
                       <ObjectUploader
-                         onGetUploadParameters={async (file) => {
-                           const res = await fetch("/api/uploads/request-url", {
-                             method: "POST", headers: {"Content-Type": "application/json"},
-                             body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
-                           });
-                           const { uploadURL } = await res.json();
-                           return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                         }}
-                         onComplete={(res) => {
-                           if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL!);
-                         }}
+                        onComplete={(res) => {
+                          handleFileUpload(req.id, 'visa', res.url);
+                        }}
                       >
                          <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.visaUrl}>
                            <Upload className="w-3 h-3 mr-1" /> {req.visaUrl ? 'تم رفع التأشيرة' : 'رفع التأشيرة'}
@@ -388,17 +380,9 @@ export default function AdminDashboard() {
 
                     <div className="w-full">
                       <ObjectUploader
-                         onGetUploadParameters={async (file) => {
-                           const res = await fetch("/api/uploads/request-url", {
-                             method: "POST", headers: {"Content-Type": "application/json"},
-                             body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
-                           });
-                           const { uploadURL } = await res.json();
-                           return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                         }}
-                         onComplete={(res) => {
-                           if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL!);
-                         }}
+                        onComplete={(res) => {
+                          handleFileUpload(req.id, 'ticket', res.url);
+                        }}
                       >
                          <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.ticketUrl}>
                            <Upload className="w-3 h-3 mr-1" /> {req.ticketUrl ? 'تم رفع التذكرة' : 'رفع التذكرة'}
