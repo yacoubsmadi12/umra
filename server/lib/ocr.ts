@@ -50,7 +50,15 @@ export async function extractPassportData(url: string): Promise<string> {
     if (mrzLines.length >= 2) {
       try {
         const { parse } = await import('mrz');
-        const result = parse(mrzLines);
+        // Standardize lines to expected lengths (44 for TD3, 30 for TD1, etc)
+        const standardizedLines = mrzLines.map(line => {
+          if (line.length > 44) return line.substring(0, 44);
+          if (line.length > 30 && line.length < 36) return line.substring(0, 30);
+          if (line.length > 36 && line.length < 44) return line.substring(0, 36);
+          return line;
+        });
+
+        const result = parse(standardizedLines);
         if (result && result.fields) {
           const f = result.fields;
           return `الاسم: ${f.firstName} ${f.lastName}\nالجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\nرقم الجواز: ${f.documentNumber}\nتاريخ الانتهاء: ${f.expirationDate}\nالجنسية: ${f.nationality}\nالرقم الوطني: ${f.optional1 || 'غير متوفر'}`;
