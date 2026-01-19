@@ -112,7 +112,7 @@ export default function Dashboard() {
               icon={BookOpen} 
               title="كتيب زين للعمرة" 
               onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
-              disabled={true}
+              disabled={request.status !== 'approved'}
             >
               <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
             </DashboardBox>
@@ -120,7 +120,7 @@ export default function Dashboard() {
             {/* Box 2: Payment Method */}
             <Dialog open={showPayment} onOpenChange={setShowPayment}>
               <DialogTrigger asChild>
-                <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={true}>
+                <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={request.status !== 'approved'}>
                   <p className="text-xs text-muted-foreground">
                     {request.paymentMethod ? "تم تحديد: " + (
                       request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
@@ -321,7 +321,7 @@ export default function Dashboard() {
             {/* Box 4: Rules & Policies */}
             <Dialog>
               <DialogTrigger asChild>
-                <DashboardBox icon={ShieldCheck} title="القواعد والسياسات" disabled={true}>
+                <DashboardBox icon={ShieldCheck} title="القواعد والسياسات" disabled={false}>
                   <p className="text-xs text-muted-foreground">يرجى الاطلاع والالتزام بالقواعد</p>
                 </DashboardBox>
               </DialogTrigger>
