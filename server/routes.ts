@@ -7,7 +7,7 @@ import session from "express-session";
 import createMemoryStore from "memorystore";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { OpenAI } from "openai";
-
+import nodemailer from "nodemailer";
 import axios from "axios";
 
 import { ObjectStorageService } from "./replit_integrations/object_storage";

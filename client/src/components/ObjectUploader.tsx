@@ -1,11 +1,7 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { ReactNode } from "react";
-import Uppy from "@uppy/core";
-import { DashboardModal } from "@uppy/react";
-import XHRUpload from "@uppy/xhr-upload";
-import "@uppy/core/dist/style.min.css";
-import "@uppy/dashboard/dist/style.min.css";
 import { Button } from "@/components/ui/button";
+import { Upload, Loader2 } from "lucide-react";
 
 interface ObjectUploaderProps {
   onComplete?: (result: { url: string; objectPath: string }) => void;
@@ -18,47 +14,59 @@ export function ObjectUploader({
   buttonClassName,
   children,
 }: ObjectUploaderProps) {
-  const [showModal, setShowModal] = useState(false);
-  const [uppy] = useState(() =>
-    new Uppy({
-      restrictions: {
-        maxNumberOfFiles: 1,
-        allowedFileTypes: ["image/*", ".pdf"],
-      },
-      autoProceed: false,
-    })
-      .use(XHRUpload, {
-        endpoint: "/api/uploads/local",
-        formData: true,
-        fieldName: "file",
-      })
-      .on("complete", (result) => {
-        if (result.successful && result.successful.length > 0) {
-          const response = result.successful[0].response;
-          if (response && response.body) {
-            onComplete?.({
-              url: (response.body as any).url,
-              objectPath: (response.body as any).objectPath,
-            });
-          }
-          setShowModal(false);
-          uppy.cancelAll();
-        }
-      })
-  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/uploads/local", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        onComplete?.({
+          url: data.url,
+          objectPath: data.objectPath,
+        });
+      }
+    } catch (error) {
+      console.error("Upload failed:", error);
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   return (
     <div>
-      <Button onClick={() => setShowModal(true)} className={buttonClassName}>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileChange}
+        accept="image/*,.pdf"
+        className="hidden"
+      />
+      <Button
+        onClick={() => fileInputRef.current?.click()}
+        className={buttonClassName}
+        disabled={isUploading}
+      >
+        {isUploading ? (
+          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+        ) : null}
         {children}
       </Button>
-
-      <DashboardModal
-        uppy={uppy}
-        open={showModal}
-        onRequestClose={() => setShowModal(false)}
-        proudlyDisplayPoweredByUppy={false}
-      />
     </div>
   );
 }
