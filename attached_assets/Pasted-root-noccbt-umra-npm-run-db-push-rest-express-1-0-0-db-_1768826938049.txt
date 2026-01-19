@@ -1,0 +1,62 @@
+root@noccbt:~/umra# npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+sh: 1: drizzle-kit: not found
+root@noccbt:~/umra# npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+sh: 1: tsx: not found
+root@noccbt:~/umra# node -v
+npm -v
+v12.22.9
+8.5.1
+root@noccbt:~/umra# npm install
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: '@google-cloud/paginator@5.0.2',
+npm WARN EBADENGINE   required: { node: '>=14.0.0' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: '@google-cloud/projectify@4.0.0',
+npm WARN EBADENGINE   required: { node: '>=14.0.0' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: '@google-cloud/promisify@4.0.0',
+npm WARN EBADENGINE   required: { node: '>=14' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: '@google-cloud/storage@7.18.0',
+npm WARN EBADENGINE   required: { node: '>=14' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'gcp-metadata@6.1.1',
+npm WARN EBADENGINE   required: { node: '>=14' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'google-auth-library@9.15.1',
+npm WARN EBADENGINE   required: { node: '>=14' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'google-logging-utils@0.0.2',
+npm WARN EBADENGINE   required: { node: '>=14' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'gtoken@7.1.0',
+npm WARN EBADENGINE   required: { node: '>=14.0.0' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
+npm WARN EBADENGINE Unsupported engine {
+npm WARN EBADENGINE   package: 'p-retry@6.2.1',
+npm WARN EBADENGINE   required: { node: '>=16.17' },
+npm WARN EBADENGINE   current: { node: 'v12.22.9', npm: '8.5.1' }
+npm WARN EBADENGINE }
