@@ -6,20 +6,37 @@ export async function extractPassportData(url: string): Promise<string> {
   try {
     // Determine the object path from the URL
     const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const objectPath = pathParts.slice(pathParts.indexOf('.private')).join('/');
+    const objectPath = urlObj.pathname.startsWith('/uploads/') 
+      ? urlObj.pathname 
+      : urlObj.pathname.split('/').slice(urlObj.pathname.split('/').indexOf('.private')).join('/');
 
     // Generate a signed URL for internal access
     const storageService = new ObjectStorageService();
-    const signedUrl = await storageService.getSignedUrl(objectPath);
+    let imageSource: string | Buffer = url;
 
-    // Fetch the image using the signed URL
-    const response = await axios.get(signedUrl, { responseType: 'arraybuffer' });
-    const buffer = Buffer.from(response.data, 'binary');
+    // Check if getSignedUrl exists (it might not in local storage setup)
+    if (typeof storageService.getSignedUrl === 'function') {
+      try {
+        const signedUrl = await storageService.getSignedUrl(objectPath);
+        const response = await axios.get(signedUrl, { responseType: 'arraybuffer' });
+        imageSource = Buffer.from(response.data, 'binary');
+      } catch (e) {
+        console.warn("Failed to get signed URL, falling back to direct URL:", e);
+      }
+    } else {
+      // Fallback for local storage where getSignedUrl might not be available
+      // or we can fetch directly if it's a public/local URL
+      try {
+        const response = await axios.get(url, { responseType: 'arraybuffer' });
+        imageSource = Buffer.from(response.data, 'binary');
+      } catch (e) {
+        console.error("Direct fetch failed:", e);
+      }
+    }
 
     // Initialize Tesseract worker
     const worker = await createWorker(['eng']);
-    const { data: { text } } = await worker.recognize(buffer);
+    const { data: { text } } = await worker.recognize(imageSource);
     await worker.terminate();
 
     if (!text || text.trim().length === 0) {
