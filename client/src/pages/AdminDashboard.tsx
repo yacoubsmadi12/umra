@@ -387,28 +387,54 @@ export default function AdminDashboard() {
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
               <TabsContent value="registered">
-                <div className="grid gap-4">
-                  {requests?.filter(r => r.status === 'approved').map(req => (
-                    <Card key={req.id} className="p-6">
-                      <h3 className="font-bold text-lg mb-4">{req.user.fullName}</h3>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-xs">بيانات صاحب الطلب</Label>
-                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
+                <div className="grid gap-6">
+                  {requests?.filter(r => r.status === 'approved' || r.status === 'pending').map(req => (
+                    <Card key={req.id} className="p-8 border-primary/20 shadow-md">
+                      <div className="flex items-center justify-between mb-6 border-b pb-4">
+                        <h3 className="font-bold text-xl text-primary font-tajawal">{req.user.fullName}</h3>
+                        <Badge variant={req.status === 'approved' ? 'default' : 'secondary'}>
+                          {req.status === 'approved' ? 'مقبول' : 'قيد الانتظار'}
+                        </Badge>
+                      </div>
+                      <div className="grid md:grid-cols-3 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                            <FileText className="w-4 h-4" /> بيانات صاحب الطلب
+                          </Label>
+                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
                             {req.passportData || "لم يتم استخراج البيانات بعد"}
                           </div>
+                          {req.passportUrl && (
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.passportUrl!, '_blank')}>
+                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
+                            </Button>
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">بيانات المرافق 1</Label>
-                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
-                            {req.companion1PassportData || "لا يوجد بيانات"}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                            <Users className="w-4 h-4" /> بيانات المرافق 1
+                          </Label>
+                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
+                            {req.companion1PassportData || (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
                           </div>
+                          {req.companion1PassportUrl && (
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion1PassportUrl!, '_blank')}>
+                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
+                            </Button>
+                          )}
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">بيانات المرافق 2</Label>
-                          <div className="p-3 bg-muted rounded-lg text-sm whitespace-pre-wrap">
-                            {req.companion2PassportData || "لا يوجد بيانات"}
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                            <Users className="w-4 h-4" /> بيانات المرافق 2
+                          </Label>
+                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
+                            {req.companion2PassportData || (req.needsCompanion && req.companion2Name ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
                           </div>
+                          {req.companion2PassportUrl && (
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion2PassportUrl!, '_blank')}>
+                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </Card>

@@ -21,16 +21,18 @@ async function extractPassportData(url: string): Promise<string> {
         {
           role: "user",
           content: [
-            { type: "text", text: "Extract all relevant information from this passport image. Return the data in a clear, readable format in Arabic. Focus on: Full Name, Passport Number, Nationality, Date of Birth, Expiry Date." },
-            { type: "image_url", image_url: { url } }
+            { type: "text", text: "Extract all relevant information from this passport image. Return the data in a clear, readable format in Arabic. Focus on: Full Name (الاسم الكامل), Passport Number (رقم الجواز), Nationality (الجنسية), Date of Birth (تاريخ الميلاد), Expiry Date (تاريخ الانتهاء). Return ONLY the extracted fields as a list." },
+            { type: "image_url", image_url: { url: url } }
           ],
         },
       ],
     });
     return response.choices[0].message.content || "Failed to extract data";
-  } catch (error) {
+  } catch (error: any) {
     console.error("AI Extraction Error:", error);
-    return "Error extracting data";
+    // If it's a 403, we might need to use a different approach for public access
+    // For now, let's log the full error
+    return `Error: ${error.message || "Unknown error during extraction"}`;
   }
 }
 
