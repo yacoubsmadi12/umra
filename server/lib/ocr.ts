@@ -45,23 +45,31 @@ export async function extractPassportData(url: string): Promise<string> {
 
     // Attempt to find MRZ lines
     const lines = text.split('\n').map(l => l.trim().replace(/\s/g, '')).filter(l => l.length >= 30);
+    // Find lines that look like MRZ (TD3 is 44, TD1 is 30)
     const mrzLines = lines.filter(line => /^[A-Z0-9<]{30,}$/.test(line));
 
     if (mrzLines.length >= 2) {
       try {
         const { parse } = await import('mrz');
         // Standardize lines to expected lengths (44 for TD3, 30 for TD1, etc)
+        // Some OCR errors add a character or two, so we trim to common lengths
         const standardizedLines = mrzLines.map(line => {
-          if (line.length > 44) return line.substring(0, 44);
-          if (line.length > 30 && line.length < 36) return line.substring(0, 30);
-          if (line.length > 36 && line.length < 44) return line.substring(0, 36);
+          if (line.length >= 44) return line.substring(0, 44);
+          if (line.length >= 36) return line.substring(0, 36);
+          if (line.length >= 30) return line.substring(0, 30);
           return line;
         });
 
-        const result = parse(standardizedLines);
-        if (result && result.fields) {
-          const f = result.fields;
-          return `الاسم: ${f.firstName} ${f.lastName}\nالجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\nرقم الجواز: ${f.documentNumber}\nتاريخ الانتهاء: ${f.expirationDate}\nالجنسية: ${f.nationality}\nالرقم الوطني: ${f.optional1 || 'غير متوفر'}`;
+        // Filter out lines that don't match the first line's length to avoid 'mrz' lib errors
+        const targetLength = standardizedLines[0].length;
+        const consistentLines = standardizedLines.filter(l => l.length === targetLength);
+
+        if (consistentLines.length >= 2) {
+          const result = parse(consistentLines);
+          if (result && result.fields) {
+            const f = result.fields;
+            return `الاسم: ${f.firstName} ${f.lastName}\nالجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\nرقم الجواز: ${f.documentNumber}\nتاريخ الانتهاء: ${f.expirationDate}\nالجنسية: ${f.nationality}\nالرقم الوطني: ${f.optional1 || 'غير متوفر'}`;
+          }
         }
       } catch (e) {
         console.error("MRZ Parsing Error:", e);
