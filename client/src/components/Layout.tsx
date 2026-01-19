@@ -101,32 +101,32 @@ export function Layout({ children, isAdmin }: LayoutProps) {
                 </div>
               </Link>
             ))}
-          </nav>
 
-          {isAdmin && location === "/admin" && (
-            <div className="mt-6 pt-6 border-t border-primary/10 space-y-2">
-              <p className="text-xs font-bold text-muted-foreground px-4 mb-2">تصفية الطلبات</p>
-              {[
-                { id: 'pending', label: 'قيد الانتظار' },
-                { id: 'approved', label: 'المقبولة' },
-                { id: 'rejected', label: 'المرفوضة' },
-                { id: 'registered', label: 'المسجلون' },
-                { id: 'all', label: 'الكل' }
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => {
-                    const event = new CustomEvent('admin-tab-change', { detail: tab.id });
-                    window.dispatchEvent(event);
-                  }}
-                  className="w-full flex items-center gap-4 px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
-                >
-                  <div className="w-2 h-2 rounded-full bg-primary/40" />
-                  <span>{tab.label}</span>
-                </button>
-              ))}
-            </div>
-          )}
+            {isAdmin && location === "/admin" && (
+              <div className="mt-4 pt-4 border-t border-primary/10 space-y-1">
+                <p className="text-[10px] font-bold text-muted-foreground px-4 mb-2 uppercase tracking-wider">تصفية الطلبات</p>
+                {[
+                  { id: 'pending', label: 'قيد الانتظار' },
+                  { id: 'approved', label: 'المقبولة' },
+                  { id: 'rejected', label: 'المرفوضة' },
+                  { id: 'registered', label: 'المسجلون' },
+                  { id: 'all', label: 'الكل' }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      const event = new CustomEvent('admin-tab-change', { detail: tab.id });
+                      window.dispatchEvent(event);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted hover:text-foreground transition-all"
+                  >
+                    <div className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </nav>
 
               <button
                 onClick={() => logout()}
