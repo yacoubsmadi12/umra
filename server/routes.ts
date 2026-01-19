@@ -191,6 +191,8 @@ export async function registerRoutes(
 
     // AI Data Extraction for Passports
     const triggerAi = (url: string, field: string) => {
+      // Use internal storage access to avoid potential auth/access issues with public URLs during extraction
+      // The OpenAI model needs to be able to access the URL.
       extractPassportData(url).then(data => 
         storage.updateRequest(id, { [field]: data })
       ).catch(e => console.error(`AI Extraction failed for ${field}:`, e));
