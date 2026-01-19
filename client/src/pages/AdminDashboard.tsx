@@ -266,7 +266,7 @@ export default function AdminDashboard() {
     return (
       <div className="grid gap-4">
         {filtered.map((req) => (
-          <Card key={req.id} className="p-6 border-l-4 border-l-primary flex flex-col md:flex-row justify-between gap-6">
+          <Card key={req.id || `req-${req.id}`} className="p-6 border-l-4 border-l-primary flex flex-col md:flex-row justify-between gap-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-lg">{req.user.fullName}</h3>
@@ -363,48 +363,48 @@ export default function AdminDashboard() {
               )}
 
               {req.status === 'approved' && (
-                <div className="grid grid-cols-2 gap-2">
-                  <ObjectUploader
-                     onGetUploadParameters={async (file) => {
-                       const res = await fetch("/api/uploads/request-url", {
-                         method: "POST", headers: {"Content-Type": "application/json"},
-                         body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
-                       });
-                       const { uploadURL } = await res.json();
-                       return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                     }}
-                     onComplete={(res) => {
-                       if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL!);
-                     }}
-                  >
-                     <div className="w-full">
-                       <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.visaUrl}>
-                         <Upload className="w-3 h-3 mr-1" /> {req.visaUrl ? 'تم رفع التأشيرة' : 'رفع التأشيرة'}
-                       </Button>
-                     </div>
-                  </ObjectUploader>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="w-full">
+                      <ObjectUploader
+                         onGetUploadParameters={async (file) => {
+                           const res = await fetch("/api/uploads/request-url", {
+                             method: "POST", headers: {"Content-Type": "application/json"},
+                             body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
+                           });
+                           const { uploadURL } = await res.json();
+                           return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                         }}
+                         onComplete={(res) => {
+                           if (res.successful?.[0]) handleFileUpload(req.id, 'visa', res.successful[0].uploadURL!);
+                         }}
+                      >
+                         <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.visaUrl}>
+                           <Upload className="w-3 h-3 mr-1" /> {req.visaUrl ? 'تم رفع التأشيرة' : 'رفع التأشيرة'}
+                         </Button>
+                      </ObjectUploader>
+                    </div>
 
-                  <ObjectUploader
-                     onGetUploadParameters={async (file) => {
-                       const res = await fetch("/api/uploads/request-url", {
-                         method: "POST", headers: {"Content-Type": "application/json"},
-                         body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
-                       });
-                       const { uploadURL } = await res.json();
-                       return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                     }}
-                     onComplete={(res) => {
-                       if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL!);
-                     }}
-                  >
-                     <div className="w-full">
-                       <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.ticketUrl}>
-                         <Upload className="w-3 h-3 mr-1" /> {req.ticketUrl ? 'تم رفع التذكرة' : 'رفع التذكرة'}
-                       </Button>
-                     </div>
-                  </ObjectUploader>
+                    <div className="w-full">
+                      <ObjectUploader
+                         onGetUploadParameters={async (file) => {
+                           const res = await fetch("/api/uploads/request-url", {
+                             method: "POST", headers: {"Content-Type": "application/json"},
+                             body: JSON.stringify({name: file.name, size: file.size, contentType: file.type})
+                           });
+                           const { uploadURL } = await res.json();
+                           return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                         }}
+                         onComplete={(res) => {
+                           if (res.successful?.[0]) handleFileUpload(req.id, 'ticket', res.successful[0].uploadURL!);
+                         }}
+                      >
+                         <Button variant="outline" size="sm" className="w-full text-xs" disabled={!!req.ticketUrl}>
+                           <Upload className="w-3 h-3 mr-1" /> {req.ticketUrl ? 'تم رفع التذكرة' : 'رفع التذكرة'}
+                         </Button>
+                      </ObjectUploader>
+                    </div>
 
-                  <Dialog>
+                  <Dialog key={`dialog-assign-${req.id}`}>
                     <DialogTrigger asChild>
                       <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={() => {
                         setSelectedColleagues(req.assignedColleagueIds || []);
@@ -418,9 +418,9 @@ export default function AdminDashboard() {
                       </DialogHeader>
                       <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                         {users?.filter(u => u.role === 'employee' && u.id !== req.userId).map(u => (
-                          <div className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                          <div key={u.id} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
                             <Checkbox 
-                              id={`user-${u.id}`} 
+                              id={`user-${req.id}-${u.id}`} 
                               checked={selectedColleagues.includes(u.id)}
                               onCheckedChange={(checked) => {
                                 const id = u.id;
@@ -431,7 +431,7 @@ export default function AdminDashboard() {
                                 }
                               }}
                             />
-                            <label htmlFor={`user-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                            <label htmlFor={`user-${req.id}-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
                               {u.fullName} - {u.department}
                             </label>
                           </div>
