@@ -21,7 +21,10 @@ export default function Register() {
   const handleSubmit = () => {
     if (!agreed) return;
     createRequest({ checklistCompleted: true }, {
-      onSuccess: () => setSubmitted(true)
+      onSuccess: () => {
+        setSubmitted(true);
+        window.location.href = "/dashboard";
+      }
     });
   };
 
