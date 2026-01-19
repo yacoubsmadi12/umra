@@ -454,25 +454,31 @@ export default function AdminDashboard() {
                 <DialogTitle>تعيين زملاء الرحلة لـ {colleaguesRequest?.user.fullName}</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
-                {users?.filter(u => u.role === 'employee' && u.id !== colleaguesRequest?.userId).map(u => (
-                  <div key={`colleague-list-${u.id}`} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
-                    <Checkbox 
-                      id={`colleague-chk-${u.id}`} 
-                      checked={selectedColleagues.includes(u.id)}
-                      onCheckedChange={(checked) => {
-                        const id = u.id;
-                        if (checked) {
-                          setSelectedColleagues(prev => prev.includes(id) ? prev : [...prev, id]);
-                        } else {
-                          setSelectedColleagues(prev => prev.filter(item => item !== id));
-                        }
-                      }}
-                    />
-                    <label htmlFor={`colleague-chk-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
-                      {u.fullName} - {u.department}
-                    </label>
+                {Array.isArray(users) ? (
+                  users.filter((u: any) => u.role === 'employee' && u.id !== colleaguesRequest?.userId).map((u: any) => (
+                    <div key={`colleague-list-${u.id}`} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                      <Checkbox 
+                        id={`colleague-chk-${u.id}`} 
+                        checked={selectedColleagues.includes(u.id)}
+                        onCheckedChange={(checked) => {
+                          const id = u.id;
+                          if (checked) {
+                            setSelectedColleagues(prev => prev.includes(id) ? prev : [...prev, id]);
+                          } else {
+                            setSelectedColleagues(prev => prev.filter(item => item !== id));
+                          }
+                        }}
+                      />
+                      <label htmlFor={`colleague-chk-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                        {u.fullName} - {u.department}
+                      </label>
+                    </div>
+                  ))
+                ) : (
+                  <div className="flex justify-center p-4">
+                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
                   </div>
-                ))}
+                )}
               </div>
               <Button className="w-full" onClick={() => {
                 if (colleaguesRequest) {
