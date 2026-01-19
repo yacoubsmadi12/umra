@@ -418,19 +418,17 @@ export default function AdminDashboard() {
                       </DialogHeader>
                       <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
                         {users?.filter(u => u.role === 'employee' && u.id !== req.userId).map(u => (
-                          <div key={u.id} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                          <div className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
                             <Checkbox 
                               id={`user-${u.id}`} 
                               checked={selectedColleagues.includes(u.id)}
                               onCheckedChange={(checked) => {
                                 const id = u.id;
-                                setSelectedColleagues(prev => {
-                                  if (checked) {
-                                    return prev.includes(id) ? prev : [...prev, id];
-                                  } else {
-                                    return prev.filter(item => item !== id);
-                                  }
-                                });
+                                if (checked) {
+                                  setSelectedColleagues(prev => prev.includes(id) ? prev : [...prev, id]);
+                                } else {
+                                  setSelectedColleagues(prev => prev.filter(item => item !== id));
+                                }
                               }}
                             />
                             <label htmlFor={`user-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
