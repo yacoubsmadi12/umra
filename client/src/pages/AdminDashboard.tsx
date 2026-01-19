@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Check, X, Upload, FileText, Mail, Users } from "lucide-react";
+import { Loader2, Check, X, Upload, FileText, Mail, Users, Download } from "lucide-react";
 import { useState, useEffect } from "react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { useQuery, useMutation } from "@tanstack/react-query";
