@@ -1,9 +1,10 @@
 import { db } from "./db";
 import {
-  users, umrahRequests, tripMaterials, emailSettings,
+  users, umrahRequests, tripMaterials, emailSettings, pastUmrahParticipants,
   type User, type InsertUser,
   type UmrahRequest, type InsertUmrahRequest,
-  type TripMaterial, type EmailSettings, type InsertEmailSettings
+  type TripMaterial, type EmailSettings, type InsertEmailSettings,
+  type PastParticipant, type InsertPastParticipant
 } from "@shared/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 
