@@ -12,15 +12,13 @@ import axios from "axios";
 
 import { ObjectStorageService } from "./replit_integrations/object_storage";
 
-const openai = new OpenAI({
-  apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
-  baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
-});
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
 
 async function extractPassportData(url: string): Promise<string> {
   try {
     // Determine the object path from the URL
-    // URL format: https://.../.private/uploads/uuid
     const urlObj = new URL(url);
     const pathParts = urlObj.pathname.split('/');
     const objectPath = pathParts.slice(pathParts.indexOf('.private')).join('/');
@@ -35,24 +33,25 @@ async function extractPassportData(url: string): Promise<string> {
     const base64Image = buffer.toString('base64');
     const mimeType = response.headers['content-type'] || 'image/jpeg';
 
-    const aiResponse = await openai.chat.completions.create({
-      model: "gpt-4o",
-      messages: [
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Extract passport info in Arabic: Name, Number, Nationality, DOB, Expiry. Return as list." },
-            { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } }
-          ],
-        },
-      ],
-    }).catch(e => {
-      console.warn("OpenAI API skip (Credentials likely missing):", e.message);
-      return null;
-    });
-    return aiResponse?.choices[0]?.message?.content || "لم يتم العثور على بيانات";
+    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+      console.warn("Gemini API skip: GOOGLE_GENERATIVE_AI_API_KEY missing");
+      return "تم استلام صورة الجواز - سيتم التدقيق يدوياً (Gemini Key Missing)";
+    }
+
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const result = await model.generateContent([
+      "Extract passport info in Arabic: Name, Number, Nationality, DOB, Expiry. Return as list.",
+      {
+        inlineData: {
+          data: base64Image,
+          mimeType: mimeType
+        }
+      }
+    ]);
+
+    return result.response.text() || "لم يتم العثور على بيانات";
   } catch (error: any) {
-    console.error("AI Extraction Error:", error);
+    console.error("AI Extraction Error (Gemini):", error);
     return "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً.";
   }
 }
