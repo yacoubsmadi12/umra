@@ -102,7 +102,9 @@ export default function Dashboard() {
             <Badge variant="secondary" className="text-md px-4 py-1">طلب رقم #{request.id}</Badge>
           </header>
 
-          <StatusCard status={request.status} comments={request.adminComments} />
+          {request.passportUrl && (
+            <StatusCard status={request.status} comments={request.adminComments} />
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Box 1: Booklet */}
@@ -175,13 +177,38 @@ export default function Dashboard() {
                           <a href={request.passportUrl} target="_blank" className="text-primary underline text-xs">عرض</a>
                         </div>
                       ) : (
-                        <ObjectUploader onGetUploadParameters={async (file) => {
-                          const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
-                          const { uploadURL } = await res.json();
-                          return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                        }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { passportUrl: res.successful[0].uploadURL } })}>
-                          <Button variant="outline" size="sm" className="w-full text-xs"><Upload className="w-3 h-3 ml-1"/> رفع الجواز</Button>
-                        </ObjectUploader>
+                        <div className="flex gap-2">
+                          <ObjectUploader onGetUploadParameters={async (file) => {
+                            const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                            const { uploadURL } = await res.json();
+                            return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                          }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { passportUrl: res.successful[0].uploadURL } })}>
+                            <Button variant="outline" size="sm" className="flex-1 text-xs"><Upload className="w-3 h-3 ml-1"/> رفع</Button>
+                          </ObjectUploader>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 text-xs"
+                            onClick={() => {
+                              const input = document.createElement('input');
+                              input.type = 'file';
+                              input.accept = 'image/*';
+                              input.capture = 'environment';
+                              input.onchange = async (e: any) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                                  const { uploadURL } = await res.json();
+                                  await fetch(uploadURL, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+                                  updateRequest({ id: request.id, data: { passportUrl: uploadURL.split('?')[0] } });
+                                }
+                              };
+                              input.click();
+                            }}
+                          >
+                            <Loader2 className="w-3 h-3 ml-1"/> تصوير
+                          </Button>
+                        </div>
                       )}
                     </div>
                     {/* Military Service */}
@@ -213,23 +240,73 @@ export default function Dashboard() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="p-3 bg-muted/20 rounded-lg space-y-3">
                           <Input placeholder="اسم المرافق الأول" defaultValue={request.companion1Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion1Name: e.target.value } })} />
-                          <ObjectUploader onGetUploadParameters={async (file) => {
-                            const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
-                            const { uploadURL } = await res.json();
-                            return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                          }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion1PassportUrl: res.successful[0].uploadURL } })}>
-                            <Button variant="outline" size="sm" className="w-full text-xs">{request.companion1PassportUrl ? "تم رفع الجواز" : "رفع جواز المرافق"}</Button>
-                          </ObjectUploader>
+                          <div className="flex gap-2">
+                            <ObjectUploader onGetUploadParameters={async (file) => {
+                              const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                              const { uploadURL } = await res.json();
+                              return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                            }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion1PassportUrl: res.successful[0].uploadURL } })}>
+                              <Button variant="outline" size="sm" className="flex-1 text-xs">{request.companion1PassportUrl ? "تم الرفع" : "رفع"}</Button>
+                            </ObjectUploader>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1 text-xs"
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.capture = 'environment';
+                                input.onchange = async (e: any) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                                    const { uploadURL } = await res.json();
+                                    await fetch(uploadURL, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+                                    updateRequest({ id: request.id, data: { companion1PassportUrl: uploadURL.split('?')[0] } });
+                                  }
+                                };
+                                input.click();
+                              }}
+                            >
+                              تصوير
+                            </Button>
+                          </div>
                         </div>
                         <div className="p-3 bg-muted/20 rounded-lg space-y-3">
                           <Input placeholder="اسم المرافق الثاني" defaultValue={request.companion2Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion2Name: e.target.value } })} />
-                          <ObjectUploader onGetUploadParameters={async (file) => {
-                            const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
-                            const { uploadURL } = await res.json();
-                            return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
-                          }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion2PassportUrl: res.successful[0].uploadURL } })}>
-                            <Button variant="outline" size="sm" className="w-full text-xs">{request.companion2PassportUrl ? "تم رفع الجواز" : "رفع جواز المرافق"}</Button>
-                          </ObjectUploader>
+                          <div className="flex gap-2">
+                            <ObjectUploader onGetUploadParameters={async (file) => {
+                              const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                              const { uploadURL } = await res.json();
+                              return { method: "PUT", url: uploadURL, headers: { "Content-Type": file.type } };
+                            }} onComplete={(res) => res.successful?.[0] && updateRequest({ id: request.id, data: { companion2PassportUrl: res.successful[0].uploadURL } })}>
+                              <Button variant="outline" size="sm" className="flex-1 text-xs">{request.companion2PassportUrl ? "تم الرفع" : "رفع"}</Button>
+                            </ObjectUploader>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="flex-1 text-xs"
+                              onClick={() => {
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.accept = 'image/*';
+                                input.capture = 'environment';
+                                input.onchange = async (e: any) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const res = await fetch("/api/uploads/request-url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }) });
+                                    const { uploadURL } = await res.json();
+                                    await fetch(uploadURL, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } });
+                                    updateRequest({ id: request.id, data: { companion2PassportUrl: uploadURL.split('?')[0] } });
+                                  }
+                                };
+                                input.click();
+                              }}
+                            >
+                              تصوير
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     )}
