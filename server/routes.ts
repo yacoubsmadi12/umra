@@ -26,7 +26,7 @@ async function extractPassportData(url: string): Promise<string> {
     const objectPath = pathParts.slice(pathParts.indexOf('.private')).join('/');
 
     // Generate a signed URL for internal access
-    const storageService = await ObjectStorageService.getInstance();
+    const storageService = new ObjectStorageService();
     const signedUrl = await storageService.getSignedUrl(objectPath);
 
     // Fetch the image using the signed URL
