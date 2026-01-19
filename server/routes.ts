@@ -13,6 +13,42 @@ import { extractPassportData } from "./lib/ocr";
 
 const MemoryStore = createMemoryStore(session);
 
+// --- Mailer Logic ---
+async function getTransporter() {
+  const settings = await storage.getEmailSettings();
+  if (!settings) return null;
+
+  return nodemailer.createTransport({
+    host: settings.host,
+    port: settings.port,
+    auth: {
+      user: settings.user,
+      pass: settings.password,
+    },
+  });
+}
+
+async function sendEmail(to: string, subject: string, text: string) {
+  try {
+    const transporter = await getTransporter();
+    const settings = await storage.getEmailSettings();
+    if (!transporter || !settings) {
+      console.log(`[MAIL SKIP] No SMTP settings. Content: ${text}`);
+      return;
+    }
+
+    await transporter.sendMail({
+      from: settings.fromEmail,
+      to,
+      subject,
+      text,
+    });
+    console.log(`[MAIL SENT] To ${to}: ${subject}`);
+  } catch (error) {
+    console.error("[MAIL ERROR]", error);
+  }
+}
+
 export async function registerRoutes(
   httpServer: Server,
   app: Express
