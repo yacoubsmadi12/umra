@@ -8,6 +8,8 @@ import createMemoryStore from "memorystore";
 import { registerObjectStorageRoutes } from "./replit_integrations/object_storage";
 import { OpenAI } from "openai";
 
+import axios from "axios";
+
 const openai = new OpenAI({
   apiKey: process.env.AI_INTEGRATIONS_OPENAI_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_OPENAI_BASE_URL,
@@ -16,34 +18,28 @@ const openai = new OpenAI({
 async function extractPassportData(url: string): Promise<string> {
   try {
     // OpenAI cannot access .private URLs directly.
-    // We need to fetch the image and send it as base64 or use a public URL.
-    // For now, let's try a simpler approach if the URL is accessible via proxy
-    // but the logs show 403. Let's modify to use a different extraction logic
-    // or provide a placeholder that explains the issue.
-    
-    // Attempting to use the Replit Object Storage internal access if possible,
-    // but since GPT-4o needs a public URL or base64, we'll use a descriptive error
-    // until we implement the base64 conversion.
-    
-    const response = await openai.chat.completions.create({
+    // We fetch the image and send it as base64.
+    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const buffer = Buffer.from(response.data, 'binary');
+    const base64Image = buffer.toString('base64');
+    const mimeType = response.headers['content-type'] || 'image/jpeg';
+
+    const aiResponse = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: [
         {
           role: "user",
           content: [
             { type: "text", text: "Extract passport info in Arabic: Name, Number, Nationality, DOB, Expiry. Return as list." },
-            { type: "image_url", image_url: { url: url } }
+            { type: "image_url", image_url: { url: `data:${mimeType};base64,${base64Image}` } }
           ],
         },
       ],
     });
-    return response.choices[0].message.content || "لم يتم العثور على بيانات";
+    return aiResponse.choices[0].message.content || "لم يتم العثور على بيانات";
   } catch (error: any) {
     console.error("AI Extraction Error:", error);
-    // If we get a 403/400, it means the URL is private. 
-    // We should ideally download and send base64, but for this fast edit
-    // we will log it clearly.
-    return "خطأ: لا يمكن للذكاء الاصطناعي الوصول للصورة الخاصة. يرجى مراجعة الجواز يدوياً.";
+    return "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً.";
   }
 }
 
