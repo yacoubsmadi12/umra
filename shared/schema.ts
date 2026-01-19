@@ -2,6 +2,21 @@ import { pgTable, text, serial, integer, boolean, timestamp } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Past Umrah participants for validation
+export const pastUmrahParticipants = pgTable("past_umrah_participants", {
+  id: serial("id").primaryKey(),
+  employeeId: text("employee_id").notNull().unique(),
+  fullName: text("full_name").notNull(),
+  yearsOfExperience: integer("years_of_experience").notNull(),
+  contractType: text("contract_type").notNull(), // 'full_time' | 'part_time' etc
+  lastUmrahDate: text("last_umrah_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertPastParticipantSchema = createInsertSchema(pastUmrahParticipants).omit({ id: true, createdAt: true });
+export type PastParticipant = typeof pastUmrahParticipants.$inferSelect;
+export type InsertPastParticipant = z.infer<typeof insertPastParticipantSchema>;
+
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   employeeId: text("employee_id").notNull().unique(),

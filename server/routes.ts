@@ -117,9 +117,27 @@ export async function registerRoutes(
       }
 
       const input = api.requests.create.input.parse(req.body);
-      const request = await storage.createRequest(req.session.userId!, input);
+      const user = await storage.getUser(req.session.userId!);
+      if (!user) return res.status(401).json({ message: "User not found" });
+
+      // Apply rules for past participants
+      const pastParticipant = await storage.getPastParticipantByEmployeeId(user.employeeId);
+      let requestStatus = 'pending';
+      let adminComments = '';
+
+      if (pastParticipant) {
+        // Rule 1: Already accepted last time -> Auto Reject
+        requestStatus = 'rejected';
+        adminComments = "تم رفض الطلب تلقائياً لأنك كنت من ضمن المقبولين في العمرة الماضية.";
+      } else if (user.jobTitle.toLowerCase().includes('full time') || true) { 
+        // Rule 2 placeholder logic
+      }
+
+      const request = await storage.createRequest(req.session.userId!, { ...input, status: requestStatus, adminComments } as any);
       
-      // Trigger OCR for passports if present in initial request
+      if (requestStatus === 'rejected') {
+        await sendEmail(user.email, "Request Status Updated", adminComments);
+      }
       const id = request.id;
       const triggerAi = async (url: string, field: string) => {
         try {
@@ -215,6 +233,21 @@ export async function registerRoutes(
     }
     const users = await storage.getUsers();
     res.json(users);
+  });
+
+  app.get("/api/past-participants", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const participants = await storage.getPastParticipants();
+    res.json(participants);
+  });
+
+  app.post("/api/past-participants", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const participants = req.body;
+    await storage.upsertPastParticipants(participants);
+    res.sendStatus(200);
   });
 
   app.get(api.materials.list.path, requireAuth, async (req, res) => {

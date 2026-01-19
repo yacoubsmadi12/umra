@@ -28,12 +28,33 @@ export interface IStorage {
   // Colleagues
   getApprovedColleagues(): Promise<User[]>;
 
-  // Email Settings
-  getEmailSettings(): Promise<EmailSettings | undefined>;
-  updateEmailSettings(settings: InsertEmailSettings): Promise<EmailSettings>;
+  // Past Participants
+  getPastParticipants(): Promise<PastParticipant[]>;
+  getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined>;
+  upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async getPastParticipants(): Promise<PastParticipant[]> {
+    return await db.select().from(pastUmrahParticipants);
+  }
+
+  async getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined> {
+    const [p] = await db.select().from(pastUmrahParticipants).where(eq(pastUmrahParticipants.employeeId, employeeId));
+    return p;
+  }
+
+  async upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void> {
+    for (const p of participants) {
+      const existing = await this.getPastParticipantByEmployeeId(p.employeeId);
+      if (existing) {
+        await db.update(pastUmrahParticipants).set(p).where(eq(pastUmrahParticipants.id, existing.id));
+      } else {
+        await db.insert(pastUmrahParticipants).values(p);
+      }
+    }
+  }
+
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;

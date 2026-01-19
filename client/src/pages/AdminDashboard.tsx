@@ -44,9 +44,93 @@ export default function AdminDashboard() {
     }
   });
 
-  const { data: emailSettings, isLoading: isLoadingEmail } = useQuery({
+  const { data: emailSettings } = useQuery({
     queryKey: [api.email.getSettings.path],
   });
+
+  const { data: pastParticipants, isLoading: isLoadingPast } = useQuery<any[]>({
+    queryKey: ["/api/past-participants"],
+  });
+
+  const uploadPastMutation = useMutation({
+    mutationFn: async (data: any[]) => {
+      const res = await apiRequest("POST", "/api/past-participants", data);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/past-participants"] });
+      toast({ title: "تم الرفع", description: "تم تحديث قائمة المقبولين السابقين بنجاح" });
+    }
+  });
+
+  const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    import("papaparse").then((Papa) => {
+      Papa.parse(file, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => {
+          const mapped = results.data.map((row: any) => ({
+            employeeId: row["الرقم الوظيفي"] || row["employeeId"],
+            fullName: row["الاسم"] || row["fullName"],
+            yearsOfExperience: parseInt(row["عدد سنوات الخبره"] || row["yearsOfExperience"] || "0"),
+            contractType: row["نوع العقد"] || row["contractType"],
+            lastUmrahDate: row["تاريخ اخر عمره تم قبوله بها"] || row["lastUmrahDate"]
+          }));
+          uploadPastMutation.mutate(mapped);
+        }
+      });
+    });
+  };
+
+  const PastParticipantsView = () => (
+    <div className="space-y-6">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>استيراد المقبولين السابقين</CardTitle>
+          <div className="flex items-center gap-2">
+            <Input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" id="csv-upload" />
+            <Button asChild variant="outline">
+              <label htmlFor="csv-upload" className="cursor-pointer">
+                <Upload className="w-4 h-4 mr-2" /> ارفاق ملف CSV/Excel
+              </label>
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground mb-4">
+            يجب أن يحتوي الملف على الأعمدة التالية: الرقم الوظيفي، الاسم، عدد سنوات الخبره، نوع العقد، تاريخ اخر عمره تم قبوله بها.
+          </p>
+          <div className="border rounded-lg overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="p-2 text-right">الرقم الوظيفي</th>
+                  <th className="p-2 text-right">الاسم</th>
+                  <th className="p-2 text-right">الخبرة</th>
+                  <th className="p-2 text-right">نوع العقد</th>
+                  <th className="p-2 text-right">آخر عمرة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pastParticipants?.map((p) => (
+                  <tr key={p.id} className="border-t">
+                    <td className="p-2">{p.employeeId}</td>
+                    <td className="p-2">{p.fullName}</td>
+                    <td className="p-2">{p.yearsOfExperience} سنة</td>
+                    <td className="p-2">{p.contractType}</td>
+                    <td className="p-2">{p.lastUmrahDate}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 
   const updateEmailMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -457,6 +541,7 @@ export default function AdminDashboard() {
                 </div>
               </TabsContent>
               <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
+              <TabsContent value="past"><PastParticipantsView /></TabsContent>
               <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
             </div>
           </Tabs>

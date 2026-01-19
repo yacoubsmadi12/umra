@@ -110,6 +110,7 @@ export function Layout({ children, isAdmin }: LayoutProps) {
                   { id: 'approved', label: 'المقبولة' },
                   { id: 'rejected', label: 'المرفوضة' },
                   { id: 'registered', label: 'المسجلون' },
+                  { id: 'past', label: 'المقبولين بالعمرة الماضية' },
                   { id: 'all', label: 'الكل' }
                 ].map((tab) => (
                   <button
