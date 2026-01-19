@@ -46,8 +46,11 @@ async function extractPassportData(url: string): Promise<string> {
           ],
         },
       ],
+    }).catch(e => {
+      console.warn("OpenAI API skip (Credentials likely missing):", e.message);
+      return null;
     });
-    return aiResponse.choices[0].message.content || "لم يتم العثور على بيانات";
+    return aiResponse?.choices[0]?.message?.content || "لم يتم العثور على بيانات";
   } catch (error: any) {
     console.error("AI Extraction Error:", error);
     return "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً.";
