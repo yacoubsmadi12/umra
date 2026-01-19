@@ -9,96 +9,9 @@ import { registerObjectStorageRoutes } from "./replit_integrations/object_storag
 import { OpenAI } from "openai";
 import nodemailer from "nodemailer";
 import axios from "axios";
-
-import { ObjectStorageService } from "./replit_integrations/object_storage";
-
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY || "");
-
-async function extractPassportData(url: string): Promise<string> {
-  try {
-    // Determine the object path from the URL
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const objectPath = pathParts.slice(pathParts.indexOf('.private')).join('/');
-
-    // Generate a signed URL for internal access
-    const storageService = new ObjectStorageService();
-    const signedUrl = await storageService.getSignedUrl(objectPath);
-
-    // Fetch the image using the signed URL
-    const response = await axios.get(signedUrl, { responseType: 'arraybuffer' });
-    const buffer = Buffer.from(response.data, 'binary');
-    const base64Image = buffer.toString('base64');
-    const mimeType = response.headers['content-type'] || 'image/jpeg';
-
-    if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-      console.warn("Gemini API skip: GOOGLE_GENERATIVE_AI_API_KEY missing");
-      return "تم استلام صورة الجواز - سيتم التدقيق يدوياً (Gemini Key Missing)";
-    }
-
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-    const result = await model.generateContent([
-      "Extract passport info in Arabic: Name, Number, Nationality, DOB, Expiry. Return as list.",
-      {
-        inlineData: {
-          data: base64Image,
-          mimeType: mimeType
-        }
-      }
-    ]);
-
-    return result.response.text() || "لم يتم العثور على بيانات";
-  } catch (error: any) {
-    console.error("AI Extraction Error (Gemini):", error);
-    return "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً.";
-  }
-}
-
-declare module 'express-session' {
-  interface SessionData {
-    userId: number;
-  }
-}
+import { extractPassportData } from "./lib/ocr";
 
 const MemoryStore = createMemoryStore(session);
-
-// --- Mailer Logic ---
-async function getTransporter() {
-  const settings = await storage.getEmailSettings();
-  if (!settings) return null;
-
-  return nodemailer.createTransport({
-    host: settings.host,
-    port: settings.port,
-    auth: {
-      user: settings.user,
-      pass: settings.password,
-    },
-  });
-}
-
-async function sendEmail(to: string, subject: string, text: string) {
-  try {
-    const transporter = await getTransporter();
-    const settings = await storage.getEmailSettings();
-    if (!transporter || !settings) {
-      console.log(`[MAIL SKIP] No SMTP settings. Content: ${text}`);
-      return;
-    }
-
-    await transporter.sendMail({
-      from: settings.fromEmail,
-      to,
-      subject,
-      text,
-    });
-    console.log(`[MAIL SENT] To ${to}: ${subject}`);
-  } catch (error) {
-    console.error("[MAIL ERROR]", error);
-  }
-}
 
 export async function registerRoutes(
   httpServer: Server,
@@ -212,11 +125,16 @@ export async function registerRoutes(
     const updated = await storage.updateRequest(id, updates);
 
     // AI Data Extraction for Passports
-    const triggerAi = (url: string, field: string) => {
-      // AI extraction disabled as per user request
-      console.log(`Skipping AI Extraction for ${field} (URL: ${url})`);
-      storage.updateRequest(id, { [field]: "تم استلام صورة الجواز - سيتم التدقيق يدوياً" })
-        .catch(e => console.error(`Failed to update ${field}:`, e));
+    const triggerAi = async (url: string, field: string) => {
+      try {
+        console.log(`Starting AI Extraction for ${field} (URL: ${url})`);
+        const extractedData = await extractPassportData(url);
+        await storage.updateRequest(id, { [field]: extractedData });
+        console.log(`AI Extraction completed for ${field}`);
+      } catch (e) {
+        console.error(`Failed to extract data for ${field}:`, e);
+        await storage.updateRequest(id, { [field]: "خطأ في استخراج البيانات: يرجى مراجعة الجواز يدوياً." });
+      }
     };
 
     if (updates.passportUrl) triggerAi(updates.passportUrl, 'passportData');
