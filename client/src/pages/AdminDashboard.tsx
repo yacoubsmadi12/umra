@@ -406,19 +406,21 @@ export default function AdminDashboard() {
 
                   <Dialog key={`dialog-assign-${req.id}`}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={() => {
+                      <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         setSelectedColleagues(req.assignedColleagueIds || []);
                       }}>
                         <Users className="w-3 h-3 mr-1" /> تعيين زملاء ({req.assignedColleagueIds?.length || 0})
                       </Button>
                     </DialogTrigger>
-                    <DialogContent>
+                    <DialogContent onPointerDownOutside={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}>
                       <DialogHeader>
                         <DialogTitle>تعيين زملاء الرحلة لـ {req.user.fullName}</DialogTitle>
                       </DialogHeader>
-                      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
                         {users?.filter(u => u.role === 'employee' && u.id !== req.userId).map(u => (
-                          <div key={u.id} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                          <div key={`user-${req.id}-${u.id}`} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border" onClick={(e) => e.stopPropagation()}>
                             <Checkbox 
                               id={`user-${req.id}-${u.id}`} 
                               checked={selectedColleagues.includes(u.id)}
@@ -430,14 +432,17 @@ export default function AdminDashboard() {
                                   setSelectedColleagues(prev => prev.filter(item => item !== id));
                                 }
                               }}
+                              onClick={(e) => e.stopPropagation()}
                             />
-                            <label htmlFor={`user-${req.id}-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                            <label htmlFor={`user-${req.id}-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1" onClick={(e) => e.stopPropagation()}>
                               {u.fullName} - {u.department}
                             </label>
                           </div>
                         ))}
                       </div>
-                      <Button className="w-full" onClick={() => {
+                      <Button className="w-full" onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
                         updateRequest({ id: req.id, data: { assignedColleagueIds: selectedColleagues } });
                         toast({ title: "تم الحفظ", description: "تم تعيين الزملاء بنجاح" });
                       }}>حفظ التعديلات</Button>
