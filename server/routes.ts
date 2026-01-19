@@ -190,21 +190,15 @@ export async function registerRoutes(
     const updated = await storage.updateRequest(id, updates);
 
     // AI Data Extraction for Passports
-    if (updates.passportUrl) {
-      extractPassportData(updates.passportUrl).then(data => 
-        storage.updateRequest(id, { passportData: data })
-      );
-    }
-    if (updates.companion1PassportUrl) {
-      extractPassportData(updates.companion1PassportUrl).then(data => 
-        storage.updateRequest(id, { companion1PassportData: data })
-      );
-    }
-    if (updates.companion2PassportUrl) {
-      extractPassportData(updates.companion2PassportUrl).then(data => 
-        storage.updateRequest(id, { companion2PassportData: data })
-      );
-    }
+    const triggerAi = (url: string, field: string) => {
+      extractPassportData(url).then(data => 
+        storage.updateRequest(id, { [field]: data })
+      ).catch(e => console.error(`AI Extraction failed for ${field}:`, e));
+    };
+
+    if (updates.passportUrl) triggerAi(updates.passportUrl, 'passportData');
+    if (updates.companion1PassportUrl) triggerAi(updates.companion1PassportUrl, 'companion1PassportData');
+    if (updates.companion2PassportUrl) triggerAi(updates.companion2PassportUrl, 'companion2PassportData');
 
     // Send Email on status change
     if (updates.status) {
