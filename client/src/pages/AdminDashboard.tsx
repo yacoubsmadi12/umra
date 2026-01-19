@@ -25,6 +25,8 @@ export default function AdminDashboard() {
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedColleagues, setSelectedColleagues] = useState<number[]>([]);
+  const [isColleaguesDialogOpen, setIsColleaguesDialogOpen] = useState(false);
+  const [colleaguesRequest, setColleaguesRequest] = useState<any>(null);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("pending");
 
@@ -404,50 +406,13 @@ export default function AdminDashboard() {
                       </ObjectUploader>
                     </div>
 
-                  <Dialog key={`dialog-assign-${req.id}`}>
-                    <DialogTrigger asChild>
-                      <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setSelectedColleagues(req.assignedColleagueIds || []);
-                      }}>
-                        <Users className="w-3 h-3 mr-1" /> تعيين زملاء ({req.assignedColleagueIds?.length || 0})
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent onPointerDownOutside={(e) => e.preventDefault()} onClick={(e) => e.stopPropagation()}>
-                      <DialogHeader>
-                        <DialogTitle>تعيين زملاء الرحلة لـ {req.user.fullName}</DialogTitle>
-                      </DialogHeader>
-                      <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-                        {users?.filter(u => u.role === 'employee' && u.id !== req.userId).map(u => (
-                          <div key={`user-${req.id}-${u.id}`} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border" onClick={(e) => e.stopPropagation()}>
-                            <Checkbox 
-                              id={`user-${req.id}-${u.id}`} 
-                              checked={selectedColleagues.includes(u.id)}
-                              onCheckedChange={(checked) => {
-                                const id = u.id;
-                                if (checked) {
-                                  setSelectedColleagues(prev => prev.includes(id) ? prev : [...prev, id]);
-                                } else {
-                                  setSelectedColleagues(prev => prev.filter(item => item !== id));
-                                }
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                            />
-                            <label htmlFor={`user-${req.id}-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1" onClick={(e) => e.stopPropagation()}>
-                              {u.fullName} - {u.department}
-                            </label>
-                          </div>
-                        ))}
-                      </div>
-                      <Button className="w-full" onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        updateRequest({ id: req.id, data: { assignedColleagueIds: selectedColleagues } });
-                        toast({ title: "تم الحفظ", description: "تم تعيين الزملاء بنجاح" });
-                      }}>حفظ التعديلات</Button>
-                    </DialogContent>
-                  </Dialog>
+                  <Button variant="outline" size="sm" className="w-full text-xs mt-2 col-span-2" onClick={() => {
+                    setColleaguesRequest(req);
+                    setSelectedColleagues(req.assignedColleagueIds || []);
+                    setIsColleaguesDialogOpen(true);
+                  }}>
+                    <Users className="w-3 h-3 mr-1" /> تعيين زملاء ({req.assignedColleagueIds?.length || 0})
+                  </Button>
                 </div>
               )}
             </div>
@@ -482,6 +447,42 @@ export default function AdminDashboard() {
               </Badge>
             </div>
           </header>
+
+          <Dialog open={isColleaguesDialogOpen} onOpenChange={setIsColleaguesDialogOpen}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>تعيين زملاء الرحلة لـ {colleaguesRequest?.user.fullName}</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 py-4 max-h-[60vh] overflow-y-auto">
+                {users?.filter(u => u.role === 'employee' && u.id !== colleaguesRequest?.userId).map(u => (
+                  <div key={`colleague-list-${u.id}`} className="flex items-center space-x-2 space-x-reverse p-2 hover:bg-muted rounded-lg border">
+                    <Checkbox 
+                      id={`colleague-chk-${u.id}`} 
+                      checked={selectedColleagues.includes(u.id)}
+                      onCheckedChange={(checked) => {
+                        const id = u.id;
+                        if (checked) {
+                          setSelectedColleagues(prev => prev.includes(id) ? prev : [...prev, id]);
+                        } else {
+                          setSelectedColleagues(prev => prev.filter(item => item !== id));
+                        }
+                      }}
+                    />
+                    <label htmlFor={`colleague-chk-${u.id}`} className="text-sm font-medium leading-none cursor-pointer flex-1">
+                      {u.fullName} - {u.department}
+                    </label>
+                  </div>
+                ))}
+              </div>
+              <Button className="w-full" onClick={() => {
+                if (colleaguesRequest) {
+                  updateRequest({ id: colleaguesRequest.id, data: { assignedColleagueIds: selectedColleagues } });
+                  toast({ title: "تم الحفظ", description: "تم تعيين الزملاء بنجاح" });
+                  setIsColleaguesDialogOpen(false);
+                }
+              }}>حفظ التعديلات</Button>
+            </DialogContent>
+          </Dialog>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <div className="mt-6">
