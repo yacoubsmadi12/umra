@@ -45,7 +45,15 @@ export function registerObjectStorageRoutes(app: Express): void {
         });
       }
 
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      // If storage service is unavailable, we might want to return a mock or handle it
+      let uploadURL;
+      try {
+        uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      } catch (e: any) {
+        console.error("Storage Service Error:", e);
+        // Fallback for development/demo: if signing fails, we use a simple base64 placeholder approach or fail gracefully
+        return res.status(500).json({ error: "Storage service configuration error. Please ensure the App Storage tool has been used to create a bucket." });
+      }
 
       // Extract object path from the presigned URL for later reference
       const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
