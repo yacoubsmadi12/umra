@@ -33,7 +33,20 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const handleTabChange = (e: any) => {
-      setActiveTab(e.detail);
+      const tab = e.detail;
+      if (tab === "المقبولين بالعمرة الماضية") {
+        setActiveTab("past_accepted");
+      } else if (tab === "فيد الانتظار") {
+        setActiveTab("pending");
+      } else if (tab === "المقبولة") {
+        setActiveTab("approved");
+      } else if (tab === "المرفوضة") {
+        setActiveTab("rejected");
+      } else if (tab === "المسجلون") {
+        setActiveTab("registered");
+      } else {
+        setActiveTab("all");
+      }
     };
     window.addEventListener('admin-tab-change', handleTabChange);
     return () => window.removeEventListener('admin-tab-change', handleTabChange);
