@@ -64,6 +64,8 @@ export default function AdminDashboard() {
     }
   });
 
+  const [csvPreview, setCsvPreview] = useState<any[] | null>(null);
+
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -80,7 +82,7 @@ export default function AdminDashboard() {
             contractType: row["نوع العقد"] || row["contractType"],
             lastUmrahDate: row["تاريخ اخر عمره تم قبوله بها"] || row["lastUmrahDate"]
           }));
-          uploadPastMutation.mutate(mapped);
+          setCsvPreview(mapped);
         }
       });
     });
@@ -309,18 +311,63 @@ export default function AdminDashboard() {
                     </div>
 
                     <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors bg-muted/10">
-                      <Upload className="w-12 h-12 text-primary/40 mb-4" />
-                      <div className="text-center space-y-2 mb-6">
-                        <p className="font-bold text-lg">قم باختيار ملف الـ CSV من جهازك</p>
-                        <p className="text-sm text-muted-foreground">سيتم معالجة الملف وتحديث القائمة فور الاختيار</p>
-                      </div>
-                      <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
-                        <label className="cursor-pointer">
-                          <Upload className="w-5 h-5 ml-2" />
-                          اختر الملف الآن
-                          <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
-                        </label>
-                      </Button>
+                      {csvPreview ? (
+                        <div className="w-full space-y-4">
+                          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 max-h-48 overflow-y-auto">
+                            <h5 className="font-bold text-sm mb-2 flex items-center gap-2">
+                              <Check className="w-4 h-4 text-green-500" />
+                              معاينة البيانات ({csvPreview.length} موظف)
+                            </h5>
+                            <table className="w-full text-[10px] text-right">
+                              <thead>
+                                <tr className="border-b border-primary/10">
+                                  <th className="pb-1">الرقم الوظيفي</th>
+                                  <th className="pb-1">الاسم</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {csvPreview.slice(0, 5).map((p, i) => (
+                                  <tr key={i} className="border-b border-primary/5 last:border-0">
+                                    <td className="py-1">{p.employeeId}</td>
+                                    <td className="py-1">{p.fullName}</td>
+                                  </tr>
+                                ))}
+                                {csvPreview.length > 5 && (
+                                  <tr>
+                                    <td colSpan={2} className="pt-1 text-muted-foreground text-center">... والمزيد</td>
+                                  </tr>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button variant="outline" className="flex-1" onClick={() => setCsvPreview(null)}>
+                              <X className="w-4 h-4 ml-1" /> إلغاء
+                            </Button>
+                            <Button className="flex-1 font-bold" onClick={() => {
+                              uploadPastMutation.mutate(csvPreview);
+                              setCsvPreview(null);
+                            }} disabled={uploadPastMutation.isPending}>
+                              {uploadPastMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : "تأكيد ورفع البيانات"}
+                            </Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <Upload className="w-12 h-12 text-primary/40 mb-4" />
+                          <div className="text-center space-y-2 mb-6">
+                            <p className="font-bold text-lg">قم باختيار ملف الـ CSV من جهازك</p>
+                            <p className="text-sm text-muted-foreground">سيتم معالجة الملف وتحديث القائمة فور الاختيار</p>
+                          </div>
+                          <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
+                            <label className="cursor-pointer">
+                              <Upload className="w-5 h-5 ml-2" />
+                              اختر الملف الآن
+                              <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
+                            </label>
+                          </Button>
+                        </>
+                      )}
                     </div>
 
                     {pastParticipants && pastParticipants.length > 0 && (
@@ -493,6 +540,35 @@ export default function AdminDashboard() {
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
               <TabsContent value="registered">
                 <div className="grid gap-6">
+                  {pastParticipants && pastParticipants.length > 0 && (
+                    <Card className="p-6 border-primary/20 shadow-md bg-primary/[0.02]">
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between border-b pb-4">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 bg-primary/10 rounded-lg">
+                              <Users className="w-6 h-6 text-primary" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-lg">المقبولون في العمرة السابقة</h3>
+                              <p className="text-xs text-muted-foreground">قائمة الموظفين الذين تم استثناؤهم تلقائياً بناءً على بيانات الملف</p>
+                            </div>
+                          </div>
+                          <Badge className="text-md px-4 py-1">{pastParticipants.length} موظف</Badge>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto p-2">
+                          {pastParticipants.map((p, i) => (
+                            <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-primary/5 shadow-sm">
+                              <div className="space-y-1">
+                                <p className="font-bold text-sm">{p.fullName}</p>
+                                <p className="text-[10px] text-muted-foreground">رقم وظيفي: {p.employeeId}</p>
+                              </div>
+                              <Badge variant="outline" className="text-[10px]">{p.lastUmrahDate}</Badge>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </Card>
+                  )}
                   {requests?.filter(r => r.status === 'approved' || r.status === 'pending').map(req => (
                     <Card key={req.id} className="p-8 border-primary/20 shadow-md">
                       <div className="flex items-center justify-between mb-6 border-b pb-4">
