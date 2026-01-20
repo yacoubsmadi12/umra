@@ -8,7 +8,8 @@ import {
   BookOpen, 
   Users, 
   LogOut, 
-  ClipboardList 
+  ClipboardList,
+  Trophy
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ export function Layout({ children, isAdmin }: LayoutProps) {
       ]
     : [
         { href: "/dashboard", label: "الرئيسية", icon: Home },
+        { href: "/competitions", label: "المسابقات", icon: Trophy },
       ];
 
   return (

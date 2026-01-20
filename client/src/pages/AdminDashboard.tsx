@@ -105,7 +105,8 @@ export default function AdminDashboard() {
     port: 587,
     user: "",
     password: "",
-    fromEmail: ""
+    fromEmail: "",
+    competitionLink: ""
   });
 
   useEffect(() => {
@@ -116,7 +117,8 @@ export default function AdminDashboard() {
         port: settings.port || 587,
         user: settings.user || "",
         password: settings.password || "",
-        fromEmail: settings.fromEmail || ""
+        fromEmail: settings.fromEmail || "",
+        competitionLink: settings.competitionLink || ""
       });
     }
   }, [emailSettings]);
@@ -326,6 +328,14 @@ export default function AdminDashboard() {
                               value={smtpForm.password} 
                               onChange={e => setSmtpForm({...smtpForm, password: e.target.value})}
                               required
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label>Competition Link / رابط المسابقة</Label>
+                            <Input 
+                              value={smtpForm.competitionLink} 
+                              onChange={e => setSmtpForm({...smtpForm, competitionLink: e.target.value})}
+                              placeholder="https://forms.gle/..."
                             />
                           </div>
                           <div className="space-y-2 md:col-span-2">

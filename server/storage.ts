@@ -181,7 +181,7 @@ export class DatabaseStorage implements IStorage {
     const existing = await this.getEmailSettings();
     if (existing) {
       const [updated] = await db.update(emailSettings)
-        .set({ ...settings, updatedAt: new Date() })
+        .set({ ...settings, competitionLink: settings.competitionLink, updatedAt: new Date() })
         .where(eq(emailSettings.id, existing.id))
         .returning();
       return updated;

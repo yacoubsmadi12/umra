@@ -73,6 +73,7 @@ export const emailSettings = pgTable("email_settings", {
   user: text("user").notNull(),
   password: text("password").notNull(),
   fromEmail: text("from_email").notNull(),
+  competitionLink: text("competition_link"),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 

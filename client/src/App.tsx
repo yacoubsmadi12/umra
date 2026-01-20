@@ -13,6 +13,7 @@ import NotFound from "@/pages/not-found";
 
 import Prayers from "@/pages/Prayers";
 import PrayerTimes from "@/pages/PrayerTimes";
+import Competitions from "@/pages/Competitions";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/colleagues" component={Colleagues} />
       <Route path="/prayers" component={Prayers} />
       <Route path="/prayer-times" component={PrayerTimes} />
+      <Route path="/competitions" component={Competitions} />
       <Route component={NotFound} />
     </Switch>
   );
