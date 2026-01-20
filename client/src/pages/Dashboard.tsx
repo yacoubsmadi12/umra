@@ -183,6 +183,7 @@ export default function Dashboard() {
                           <div className="flex gap-2">
                             <ObjectUploader 
                               verifyPassport 
+                              asChild
                               onComplete={(res) => {
                                 updateRequest({ 
                                   id: request.id, 
@@ -193,7 +194,11 @@ export default function Dashboard() {
                                 });
                               }}
                             >
-                              <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer"><Upload className="w-3 h-3 ml-1"/> رفع</div></Button>
+                              <div className="flex items-center justify-center cursor-pointer">
+                                <Button variant="outline" size="sm" className="flex-1 text-xs">
+                                  <Upload className="w-3 h-3 ml-1"/> رفع
+                                </Button>
+                              </div>
                             </ObjectUploader>
                             <Button 
                               variant="outline" 
@@ -253,6 +258,7 @@ export default function Dashboard() {
                           <div className="flex gap-2">
                             <ObjectUploader 
                               verifyPassport
+                              asChild
                               onComplete={(res) => {
                                 updateRequest({ 
                                   id: request.id, 
@@ -263,7 +269,11 @@ export default function Dashboard() {
                                 });
                               }}
                             >
-                              <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion1PassportUrl ? "تم الرفع" : "رفع"}</div></Button>
+                              <div className="flex items-center justify-center cursor-pointer">
+                                <Button variant="outline" size="sm" className="flex-1 text-xs">
+                                  {request.companion1PassportUrl ? "تم الرفع" : "رفع"}
+                                </Button>
+                              </div>
                             </ObjectUploader>
                             <Button 
                               variant="outline" 
@@ -306,6 +316,7 @@ export default function Dashboard() {
                           <div className="flex gap-2">
                             <ObjectUploader 
                               verifyPassport
+                              asChild
                               onComplete={(res) => {
                                 updateRequest({ 
                                   id: request.id, 
@@ -316,7 +327,11 @@ export default function Dashboard() {
                                 });
                               }}
                             >
-                              <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion2PassportUrl ? "تم الرفع" : "رفع"}</div></Button>
+                              <div className="flex items-center justify-center cursor-pointer">
+                                <Button variant="outline" size="sm" className="flex-1 text-xs">
+                                  {request.companion2PassportUrl ? "تم الرفع" : "رفع"}
+                                </Button>
+                              </div>
                             </ObjectUploader>
                             <Button 
                               variant="outline" 

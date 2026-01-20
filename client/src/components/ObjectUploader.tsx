@@ -9,6 +9,7 @@ interface ObjectUploaderProps {
   buttonClassName?: string;
   children: ReactNode;
   verifyPassport?: boolean;
+  asChild?: boolean;
 }
 
 export function ObjectUploader({
@@ -16,6 +17,7 @@ export function ObjectUploader({
   buttonClassName,
   children,
   verifyPassport = false,
+  asChild = false,
 }: ObjectUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -106,14 +108,26 @@ export function ObjectUploader({
         className="hidden"
       />
       <Button
-        onClick={() => fileInputRef.current?.click()}
+        asChild={asChild}
+        onClick={() => !asChild && fileInputRef.current?.click()}
         className={buttonClassName}
         disabled={isUploading}
       >
-        {isUploading ? (
-          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-        ) : null}
-        {children}
+        {asChild ? (
+          <div onClick={() => fileInputRef.current?.click()} className="cursor-pointer">
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {children}
+          </div>
+        ) : (
+          <>
+            {isUploading ? (
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+            ) : null}
+            {children}
+          </>
+        )}
       </Button>
 
       <Dialog open={showVerify} onOpenChange={setShowVerify}>
