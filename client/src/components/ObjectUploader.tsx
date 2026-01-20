@@ -42,18 +42,31 @@ export function ObjectUploader({
         
         if (verifyPassport) {
           // Trigger OCR and wait for it
-          const ocrResponse = await fetch("/api/ai/trigger", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ 
-              type: "passportData", 
-              url: data.url 
-            }),
-          });
-          const ocrData = await ocrResponse.json();
-          setExtractedData(ocrData.result);
-          setTempResult(data);
-          setShowVerify(true);
+          try {
+            const ocrResponse = await fetch("/api/ai/trigger", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ 
+                type: "passportData", 
+                url: data.url 
+              }),
+            });
+            
+            if (!ocrResponse.ok) {
+              throw new Error("OCR service failed");
+            }
+            
+            const ocrData = await ocrResponse.json();
+            setExtractedData(ocrData.result);
+            setTempResult(data);
+            setShowVerify(true);
+          } catch (ocrError) {
+            console.error("OCR trigger failed:", ocrError);
+            // Fallback: still show verify but with error message
+            setExtractedData("فشل استخراج البيانات تلقائياً، يرجى التأكد من الصورة يدوياً.");
+            setTempResult(data);
+            setShowVerify(true);
+          }
         } else {
           onComplete?.({
             url: data.url,
