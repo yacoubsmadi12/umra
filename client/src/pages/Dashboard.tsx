@@ -321,7 +321,6 @@ export default function Dashboard() {
               </DialogContent>
             </Dialog>
 
-            {/* Box 4: Rules & Policies */}
             <Dialog>
               <DialogTrigger asChild>
                 <DashboardBox icon={ShieldCheck} title="القواعد والسياسات" disabled={false}>
@@ -332,13 +331,43 @@ export default function Dashboard() {
                 <DialogHeader>
                   <DialogTitle>القواعد والسياسات</DialogTitle>
                 </DialogHeader>
-                <div className="py-4 space-y-4 prose prose-sm max-h-[60vh] overflow-y-auto">
-                  {Array.isArray(materials) ? materials.filter((m: any) => m.type === 'instruction').map((m: any) => (
-                    <div key={m.id} className="p-4 bg-muted/20 rounded-lg border">
-                      <h4 className="font-bold text-primary mb-2">{m.title}</h4>
-                      <p className="text-sm">{m.url}</p>
-                    </div>
-                  )) : <p className="text-center italic">لا توجد قواعد حالياً</p>}
+                <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto font-tajawal">
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">سياسات التسجيل والقبول</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>يجب أن يكون الموظف قد أمضى سنة على الأقل في الخدمة الفعلية.</li>
+                      <li>الأولوية للموظفين الذين لم يسبق لهم أداء العمرة من خلال برامج الشركة السابقة.</li>
+                      <li>التسجيل عبر المنصة الإلكترونية هو الوسيلة الوحيدة المعتمدة للتقديم.</li>
+                      <li>يحتفظ قسم الموارد البشرية بالحق في قبول أو رفض الطلبات بناءً على الميزانية المتاحة ومعايير المفاضلة.</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">الوثائق المطلوبة</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>جواز سفر ساري المفعول لمدة لا تقل عن 6 أشهر من تاريخ السفر.</li>
+                      <li>صورة واضحة عن دفتر خدمة العلم (للموظفين الذكور المطلوب منهم ذلك).</li>
+                      <li>وثائق إثبات صلة القرابة للمرافقين (في حال طلب مرافقين).</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">الالتزامات المالية</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>تلتزم الشركة بتغطية تكاليف البرنامج الأساسية (السكن والمواصلات) وفقاً للسياسة المعتمدة.</li>
+                      <li>أي تكاليف إضافية خارج البرنامج الأساسي يتحملها الموظف بالكامل.</li>
+                      <li>في حال الرغبة في التقسيط، يتم تقديم طلب رسمي للاقتطاع من الراتب وفق النماذج المتوفرة.</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">قواعد السلوك العام</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>الموظف يمثل شركة زين أثناء الرحلة، ويجب الالتزام بحسن السير والسلوك.</li>
+                      <li>الالتزام بمواعيد التجمع والانطلاق المقررة من قبل المشرفين على الرحلة.</li>
+                      <li>التعاون التام مع زملاء الرحلة والعمل بروح الفريق الواحد.</li>
+                    </ul>
+                  </section>
                 </div>
               </DialogContent>
             </Dialog>
