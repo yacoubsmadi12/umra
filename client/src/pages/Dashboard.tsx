@@ -13,7 +13,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Loader2, CheckCircle2, XCircle, Clock, Upload, Download, CreditCard, Users, BookOpen, ShieldCheck, FileText, Phone, MessageCircle } from "lucide-react";
+import { 
+  Loader2, 
+  CheckCircle2, 
+  XCircle, 
+  Clock, 
+  Upload, 
+  Download, 
+  CreditCard, 
+  Users, 
+  BookOpen, 
+  ShieldCheck, 
+  FileText, 
+  Phone, 
+  MessageCircle,
+  Heart,
+  Timer
+} from "lucide-react";
 import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
@@ -102,7 +118,21 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto space-y-8 pb-12">
           <header className="flex items-center justify-between border-b pb-4">
             <h1 className="text-3xl font-bold font-tajawal text-primary">الرئيسية</h1>
-            <Badge variant="secondary" className="text-md px-4 py-1">طلب رقم #{request.id}</Badge>
+            <div className="flex gap-2">
+              <Link href="/prayers">
+                <Button variant="outline" size="sm" className="gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
+                  <Heart className="w-4 h-4 text-primary" />
+                  الأدعية 🙌
+                </Button>
+              </Link>
+              <Link href="/prayer-times">
+                <Button variant="outline" size="sm" className="gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
+                  <Timer className="w-4 h-4 text-primary" />
+                  مواقيت الصلاة
+                </Button>
+              </Link>
+              <Badge variant="secondary" className="text-md px-4 py-1">طلب رقم #{request.id}</Badge>
+            </div>
           </header>
 
           {request.passportUrl && (

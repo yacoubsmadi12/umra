@@ -76,6 +76,19 @@ export const emailSettings = pgTable("email_settings", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Prayers and Duas
+export const prayers = pgTable("prayers", {
+  id: serial("id").primaryKey(),
+  category: text("category").notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  icon: text("icon"),
+  order: integer("order").default(0),
+});
+
+export const insertPrayerSchema = createInsertSchema(prayers).omit({ id: true });
+export type Prayer = typeof prayers.$inferSelect;
+
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertUmrahRequestSchema = createInsertSchema(umrahRequests).omit({ 
   id: true, 

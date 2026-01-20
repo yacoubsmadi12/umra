@@ -11,6 +11,9 @@ import Booklet from "@/pages/Booklet";
 import Colleagues from "@/pages/Colleagues";
 import NotFound from "@/pages/not-found";
 
+import Prayers from "@/pages/Prayers";
+import PrayerTimes from "@/pages/PrayerTimes";
+
 function Router() {
   return (
     <Switch>
@@ -20,6 +23,8 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/booklet" component={Booklet} />
       <Route path="/colleagues" component={Colleagues} />
+      <Route path="/prayers" component={Prayers} />
+      <Route path="/prayer-times" component={PrayerTimes} />
       <Route component={NotFound} />
     </Switch>
   );

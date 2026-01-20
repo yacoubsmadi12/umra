@@ -186,6 +186,12 @@ export async function registerRoutes(
     res.json(request || null);
   });
 
+  // --- Prayers Routes ---
+  app.get("/api/prayers", async (_req, res) => {
+    const prayers = await storage.getPrayers();
+    res.json(prayers);
+  });
+
   app.patch(api.requests.update.path, requireAuth, async (req, res) => {
     const id = parseInt(req.params.id);
     const user = await storage.getUser(req.session.userId!);
