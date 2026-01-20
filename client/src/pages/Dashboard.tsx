@@ -181,9 +181,12 @@ export default function Dashboard() {
                         </div>
                       ) : (
                           <div className="flex gap-2">
-                            <ObjectUploader onComplete={(res) => {
-                              updateRequest({ id: request.id, data: { passportUrl: res.url } });
-                            }}>
+                            <ObjectUploader 
+                              verifyPassport 
+                              onComplete={(res) => {
+                                updateRequest({ id: request.id, data: { passportUrl: res.url } });
+                              }}
+                            >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer"><Upload className="w-3 h-3 ml-1"/> رفع</div></Button>
                             </ObjectUploader>
                             <Button 
@@ -242,9 +245,12 @@ export default function Dashboard() {
                         <div className="p-3 bg-muted/20 rounded-lg space-y-3">
                           <Input placeholder="اسم المرافق الأول" defaultValue={request.companion1Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion1Name: e.target.value } })} />
                           <div className="flex gap-2">
-                            <ObjectUploader onComplete={(res) => {
+                            <ObjectUploader 
+                              verifyPassport
+                              onComplete={(res) => {
                                 updateRequest({ id: request.id, data: { companion1PassportUrl: res.url } });
-                            }}>
+                              }}
+                            >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion1PassportUrl ? "تم الرفع" : "رفع"}</div></Button>
                             </ObjectUploader>
                             <Button 
@@ -266,6 +272,13 @@ export default function Dashboard() {
                                       body: formData 
                                     });
                                     const { url } = await res.json();
+                                    
+                                    // Trigger verification for camera capture too
+                                    const ocrRes = await fetch("/api/ai/trigger", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ type: "companion1PassportData", url })
+                                    });
                                     updateRequest({ id: request.id, data: { companion1PassportUrl: url } });
                                   }
                                 };
@@ -279,9 +292,12 @@ export default function Dashboard() {
                         <div className="p-3 bg-muted/20 rounded-lg space-y-3">
                           <Input placeholder="اسم المرافق الثاني" defaultValue={request.companion2Name || ""} onBlur={(e) => updateRequest({ id: request.id, data: { companion2Name: e.target.value } })} />
                           <div className="flex gap-2">
-                            <ObjectUploader onComplete={(res) => {
+                            <ObjectUploader 
+                              verifyPassport
+                              onComplete={(res) => {
                                 updateRequest({ id: request.id, data: { companion2PassportUrl: res.url } });
-                            }}>
+                              }}
+                            >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion2PassportUrl ? "تم الرفع" : "رفع"}</div></Button>
                             </ObjectUploader>
                             <Button 
@@ -303,6 +319,13 @@ export default function Dashboard() {
                                       body: formData 
                                     });
                                     const { url } = await res.json();
+                                    
+                                    // Trigger verification for camera capture too
+                                    const ocrRes = await fetch("/api/ai/trigger", {
+                                      method: "POST",
+                                      headers: { "Content-Type": "application/json" },
+                                      body: JSON.stringify({ type: "companion2PassportData", url })
+                                    });
                                     updateRequest({ id: request.id, data: { companion2PassportUrl: url } });
                                   }
                                 };

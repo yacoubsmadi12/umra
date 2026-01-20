@@ -1,21 +1,27 @@
 import { useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Check, X } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ObjectUploaderProps {
   onComplete?: (result: { url: string; objectPath: string }) => void;
   buttonClassName?: string;
   children: ReactNode;
+  verifyPassport?: boolean;
 }
 
 export function ObjectUploader({
   onComplete,
   buttonClassName,
   children,
+  verifyPassport = false,
 }: ObjectUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [showVerify, setShowVerify] = useState(false);
+  const [extractedData, setExtractedData] = useState<string | null>(null);
+  const [tempResult, setTempResult] = useState<{ url: string; objectPath: string } | null>(null);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,10 +39,27 @@ export function ObjectUploader({
 
       if (response.ok) {
         const data = await response.json();
-        onComplete?.({
-          url: data.url,
-          objectPath: data.objectPath,
-        });
+        
+        if (verifyPassport) {
+          // Trigger OCR and wait for it
+          const ocrResponse = await fetch("/api/ai/trigger", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+              type: "passportData", 
+              url: data.url 
+            }),
+          });
+          const ocrData = await ocrResponse.json();
+          setExtractedData(ocrData.result);
+          setTempResult(data);
+          setShowVerify(true);
+        } else {
+          onComplete?.({
+            url: data.url,
+            objectPath: data.objectPath,
+          });
+        }
       }
     } catch (error) {
       console.error("Upload failed:", error);
@@ -46,6 +69,13 @@ export function ObjectUploader({
         fileInputRef.current.value = "";
       }
     }
+  };
+
+  const confirmUpload = () => {
+    if (tempResult) {
+      onComplete?.(tempResult);
+    }
+    setShowVerify(false);
   };
 
   return (
@@ -67,6 +97,30 @@ export function ObjectUploader({
         ) : null}
         {children}
       </Button>
+
+      <Dialog open={showVerify} onOpenChange={setShowVerify}>
+        <DialogContent className="sm:max-w-md font-tajawal">
+          <DialogHeader>
+            <DialogTitle className="text-center">التحقق من بيانات جواز السفر</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <div className="p-4 bg-primary/5 rounded-xl text-sm border border-primary/10 whitespace-pre-wrap leading-relaxed">
+              {extractedData || "جاري استخراج البيانات..."}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4 text-center">
+              هل البيانات المستخرجة صحيحة؟ يمكنك التأكيد أو إعادة الرفع.
+            </p>
+          </div>
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" className="flex-1" onClick={() => setShowVerify(false)}>
+              <X className="w-4 h-4 ml-1" /> إعادة الرفع
+            </Button>
+            <Button className="flex-1" onClick={confirmUpload}>
+              <Check className="w-4 h-4 ml-1" /> تأكيد البيانات
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
