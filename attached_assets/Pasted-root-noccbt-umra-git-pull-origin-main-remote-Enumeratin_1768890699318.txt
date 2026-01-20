@@ -1,0 +1,80 @@
+root@noccbt:~/umra# git pull origin main
+remote: Enumerating objects: 188, done.
+remote: Counting objects: 100% (188/188), done.
+remote: Compressing objects: 100% (22/22), done.
+remote: Total 171 (delta 140), reused 170 (delta 139), pack-reused 0 (from 0)
+Receiving objects: 100% (171/171), 5.04 MiB | 8.59 MiB/s, done.
+Resolving deltas: 100% (140/140), completed with 13 local objects.
+From https://github.com/yacoubsmadi12/umra
+ * branch            main       -> FETCH_HEAD
+   2c4cad1..406052d  main       -> origin/main
+Updating 2c4cad1..406052d
+error: Your local changes to the following files would be overwritten by merge:
+        package-lock.json
+        package.json
+Please commit your changes or stash them before you merge.
+Aborting
+root@noccbt:~/umra#
+root@noccbt:~/umra#
+root@noccbt:~/umra# npm install
+
+up to date, audited 719 packages in 4s
+
+94 packages are looking for funding
+  run `npm fund` for details
+
+3 high severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
+root@noccbt:~/umra# npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/root/umra/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+root@noccbt:~/umra#
+root@noccbt:~/umra#
+root@noccbt:~/umra# DATABASE_URL=postgres://noccbt:Zain1234@localhost:5432/DATABASE_NAME
+root@noccbt:~/umra#
+root@noccbt:~/umra#
+root@noccbt:~/umra#
+root@noccbt:~/umra# npm run db:push
+
+> rest-express@1.0.0 db:push
+> drizzle-kit push
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/root/umra/drizzle.config.ts'
+Using 'pg' driver for database querying
+[✓] Pulling schema from database...
+[i] No changes detected
+root@noccbt:~/umra# npm run dev
+
+> rest-express@1.0.0 dev
+> NODE_ENV=development tsx server/index.ts
+
+6:35:13 AM [express] serving on port 5000
+
+warn - The class `duration-[20s]` is ambiguous and matches multiple utilities.
+warn - If this is content and not a class, replace it with `duration-&lsqb;20s&rsqb;` to silence this warning.
+6:35:20 AM [express] GET /api/auth/me 401 in 4ms :: {"message":"Unauthorized"}
+6:35:20 AM [express] GET /api/requests 401 in 2ms :: {"message":"Unauthorized"}
+6:35:20 AM [express] GET /api/users 401 in 2ms :: {"message":"Unauthorized"}
+6:35:20 AM [express] GET /api/admin/email-settings 401 in 1ms :: {"message":"Unauthorized"}
+6:35:20 AM [express] GET /api/past-participants 401 in 1ms :: {"message":"Unauthorized"}
+6:35:25 AM [express] POST /api/auth/login 401 in 38ms :: {"message":"Invalid credentials"}
+6:35:34 AM [express] POST /api/auth/login 200 in 10ms :: {"id":1,"employeeId":"9999","password":"admin123","fullName":"Admin User","email":"admin@zain.com","phone":"0790000000","jobTitle":"HR Manager","department":"Human Resources","role":"admin","gender":"male","createdAt":"2026-01-19T13:33:59.541Z"}
+6:35:34 AM [express] GET /api/requests 304 in 15ms :: [{"id":2,"userId":3,"status":"approved","checklistCompleted":true,"paymentMethod":null,"passportUrl":null,"militaryServiceUrl":null,"visaUrl":null,"ticketUrl":null,"adminComments":null,"needsCompanion":false,"companion1Name":null,"companion1PassportUrl":null,"companion2Name":null,"companion2PassportUrl":null,"assignedColleagueIds":null,"createdAt":"2026-01-19T18:35:31.693Z","user":{"id":3,"employeeId":"1001","password":"123456","fullName":"Employee 1001","email":"emp1001@zain.com","phone":"0790000000","jobTitle":"Employee","department":"General","role":"employee","gender":"male","createdAt":"2026-01-19T13:33:59.610Z"}},{"id":1,"userId":2,"status":"approved","checklistCompleted":true,"paymentMethod":null,"passportUrl":"http://192.168.7.151:5000/uploads/file-1768829697583-462915344.jpeg","militaryServiceUrl":"http://192.168.7.151:5000/uploads/file-1768829704231-190673699.pdf","visaUrl":null,"ticketUrl":null,"adminComments":null,"needsCompanion":true,"companion1Name":null,"companion1PassportUrl":"http://192.168.7.151:5000/uploads/file-1768829711042-440255668.jpeg","companion2Name":null,"companion2PassportUrl":"http://192.168.7.151:5000/uploads/file-1768829715476-974344936.jpeg","assignedColleagueIds":null,"createdAt":"2026-01-19T13:34:50.494Z","user":{"id":2,"employeeId":"1000","password":"123456","fullName":"Employee 1000","email":"emp1000@zain.com","phone":"0790000000","jobTitle":"Employee","department":"General","role":"employee","gender":"male","createdAt":"2026-01-19T13:33:59.600Z"}}]
+6:35:34 AM [express] GET /api/admin/email-settings 304 in 11ms
+6:35:34 AM [express] GET /api/past-participants 304 in 32ms :: []
+6:35:44 AM [express] POST /api/auth/logout 200 in 3ms
+6:35:49 AM [express] POST /api/auth/login 200 in 24ms :: {"id":3,"employeeId":"1001","password":"123456","fullName":"Employee 1001","email":"emp1001@zain.com","phone":"0790000000","jobTitle":"Employee","department":"General","role":"employee","gender":"male","createdAt":"2026-01-19T13:33:59.610Z"}
+6:35:49 AM [express] GET /api/requests/me 200 in 9ms :: {"id":2,"userId":3,"status":"approved","checklistCompleted":true,"paymentMethod":null,"passportUrl":null,"militaryServiceUrl":null,"visaUrl":null,"ticketUrl":null,"adminComments":null,"needsCompanion":false,"companion1Name":null,"companion1PassportUrl":null,"companion2Name":null,"companion2PassportUrl":null,"passportData":null,"companion1PassportData":null,"companion2PassportData":null,"assignedColleagueIds":null,"createdAt":"2026-01-19T18:35:31.693Z","updatedAt":"2026-01-20T05:37:17.347Z"}
+6:35:49 AM [express] GET /api/materials 304 in 5ms :: []
