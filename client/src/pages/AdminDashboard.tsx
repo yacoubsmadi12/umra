@@ -292,142 +292,6 @@ export default function AdminDashboard() {
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
-                    <Users className="w-4 h-4" /> المقبولين بالعمرة الماضية
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl">
-                  <DialogHeader>
-                    <DialogTitle>إدارة المقبولين في العمرة السابقة</DialogTitle>
-                    <DialogDescription>
-                      قم برفع ملف الـ CSV الخاص بالموظفين الذين تم قبولهم في الرحلة السابقة لتحديث النظام تلقائياً.
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-6 py-4 font-tajawal">
-                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 space-y-3 text-sm">
-                      <h4 className="font-bold text-primary flex items-center gap-2">
-                        <FileText className="w-4 h-4" /> إرشادات ملف الـ CSV
-                      </h4>
-                      <div className="text-muted-foreground leading-relaxed space-y-2">
-                        <p>يرجى التأكد من أن ملف الـ CSV يحتوي على الأعمدة التالية بالترتيب أو بنفس المسميات لضمان صحة البيانات:</p>
-                        <ul className="list-disc list-inside space-y-1 pr-2">
-                          <li><strong>الرقم الوظيفي:</strong> يجب أن يتطابق مع رقم الموظف في النظام.</li>
-                          <li><strong>الاسم:</strong> اسم الموظف الكامل.</li>
-                          <li><strong>عدد سنوات الخبره:</strong> رقم صحيح (مثلاً: 5).</li>
-                          <li><strong>نوع العقد:</strong> (مثلاً: full_time).</li>
-                          <li><strong>تاريخ اخر عمره:</strong> تاريخ القبول السابق.</li>
-                        </ul>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2 mt-4">
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">الرقم الوظيفي (employeeId)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">الاسم (fullName)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">عدد سنوات الخبره (yearsOfExperience)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">نوع العقد (contractType)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center col-span-2">تاريخ اخر عمره تم قبوله بها (lastUmrahDate)</div>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors bg-muted/10">
-                      {csvPreview ? (
-                        <div className="w-full space-y-4">
-                          <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 max-h-48 overflow-y-auto">
-                            <h5 className="font-bold text-sm mb-2 flex items-center gap-2">
-                              <Check className="w-4 h-4 text-green-500" />
-                              معاينة البيانات ({csvPreview.length} موظف)
-                            </h5>
-                            <table className="w-full text-[10px] text-right">
-                              <thead>
-                                <tr className="border-b border-primary/10">
-                                  <th className="pb-1">الرقم الوظيفي</th>
-                                  <th className="pb-1">الاسم</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {csvPreview.slice(0, 5).map((p, i) => (
-                                  <tr key={i} className="border-b border-primary/5 last:border-0">
-                                    <td className="py-1">{p.employeeId}</td>
-                                    <td className="py-1">{p.fullName}</td>
-                                  </tr>
-                                ))}
-                                {csvPreview.length > 5 && (
-                                  <tr>
-                                    <td colSpan={2} className="pt-1 text-muted-foreground text-center">... والمزيد</td>
-                                  </tr>
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                          <div className="flex gap-2">
-                            <Button variant="outline" className="flex-1" onClick={() => setCsvPreview(null)}>
-                              <X className="w-4 h-4 ml-1" /> إلغاء
-                            </Button>
-                            <Button className="flex-1 font-bold" onClick={() => {
-                              uploadPastMutation.mutate(csvPreview);
-                              setCsvPreview(null);
-                            }} disabled={uploadPastMutation.isPending}>
-                              {uploadPastMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : "تأكيد ورفع البيانات"}
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <>
-                          <Upload className="w-12 h-12 text-primary/40 mb-4" />
-                          <div className="text-center space-y-2 mb-6">
-                            <p className="font-bold text-lg">قم باختيار ملف الـ CSV من جهازك</p>
-                            <p className="text-sm text-muted-foreground">سيتم معالجة الملف وتحديث القائمة فور الاختيار</p>
-                          </div>
-                          <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
-                            <label className="cursor-pointer">
-                              <Upload className="w-5 h-5 ml-2" />
-                              اختر الملف الآن (Excel أو CSV)
-                              <input type="file" className="hidden" accept=".csv, .xlsx, .xls" onChange={handleCsvUpload} />
-                            </label>
-                          </Button>
-                        </>
-                      )}
-                    </div>
-
-                    {pastParticipants && pastParticipants.length > 0 && (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                            <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
-                          </div>
-                          <Button variant="outline" size="sm" className="hover-elevate" onClick={() => {
-                            const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
-                              pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
-                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                            const link = document.createElement("a");
-                            link.href = URL.createObjectURL(blob);
-                            link.download = "past_participants.csv";
-                            link.click();
-                          }}>تنزيل القائمة (CSV)</Button>
-                        </div>
-                        
-                        <div className="bg-white rounded-xl border border-primary/10 overflow-hidden shadow-sm">
-                          <div className="bg-primary/5 p-2 text-[10px] font-bold grid grid-cols-3 text-center border-b">
-                            <span>الرقم الوظيفي</span>
-                            <span>الاسم</span>
-                            <span>تاريخ العمرة</span>
-                          </div>
-                          <div className="max-h-48 overflow-y-auto">
-                            {pastParticipants.map((p, i) => (
-                              <div key={i} className="grid grid-cols-3 text-[10px] p-2 text-center border-b last:border-0 hover:bg-primary/[0.02]">
-                                <span>{p.employeeId}</span>
-                                <span className="truncate px-1">{p.fullName}</span>
-                                <span>{p.lastUmrahDate}</span>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="sm" className="gap-2">
                     <Mail className="w-4 h-4" /> إعدادات البريد
                   </Button>
                 </DialogTrigger>
@@ -563,16 +427,124 @@ export default function AdminDashboard() {
           </Dialog>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
+            <TabsList className="grid w-full grid-cols-5 bg-muted/50 p-1">
               <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
               <TabsTrigger value="approved">المقبولة</TabsTrigger>
               <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
               <TabsTrigger value="registered">المسجلون</TabsTrigger>
+              <TabsTrigger value="past_accepted" className="gap-2">
+                <Users className="w-4 h-4" /> المقبولين سابقاً
+              </TabsTrigger>
             </TabsList>
             <div className="mt-6">
               <TabsContent value="pending"><RequestList filterStatus="pending" /></TabsContent>
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
+              <TabsContent value="past_accepted">
+                <Card className="p-8 border-primary/20 shadow-lg bg-white">
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between border-b pb-6">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-primary/10 rounded-2xl">
+                          <Users className="w-8 h-8 text-primary" />
+                        </div>
+                        <div>
+                          <h2 className="text-2xl font-bold font-tajawal">إدارة المقبولين في العمرة السابقة</h2>
+                          <p className="text-muted-foreground">عرض وتحديث قائمة الموظفين المستثنيين من القرعة تلقائياً</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-3">
+                        {pastParticipants && pastParticipants.length > 0 && (
+                          <Button variant="outline" className="hover-elevate" onClick={() => {
+                            const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
+                              pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
+                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "past_participants.csv";
+                            link.click();
+                          }}>تصدير البيانات (CSV)</Button>
+                        )}
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button className="font-bold gap-2">
+                              <Upload className="w-4 h-4" /> تحديث القائمة
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-2xl">
+                            <DialogHeader>
+                              <DialogTitle>تحديث قائمة المقبولين</DialogTitle>
+                              <DialogDescription>ارفع ملف Excel أو CSV جديد لتحديث بيانات الاستثناءات</DialogDescription>
+                            </DialogHeader>
+                            <div className="space-y-6 py-4 font-tajawal">
+                              <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 text-sm space-y-2">
+                                <p className="font-bold text-primary">إرشادات الملف:</p>
+                                <p>يجب أن يحتوي الملف على أعمدة: الرقم الوظيفي، الاسم، سنوات الخبرة، نوع العقد، وتاريخ العمرة.</p>
+                              </div>
+                              <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors bg-muted/10">
+                                {csvPreview ? (
+                                  <div className="w-full space-y-4">
+                                    <div className="bg-white p-4 rounded-xl border border-primary/10 max-h-48 overflow-y-auto">
+                                      <h5 className="font-bold text-sm mb-2 flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-green-500" /> معاينة ({csvPreview.length} موظف)
+                                      </h5>
+                                      <table className="w-full text-[10px] text-right">
+                                        <thead><tr className="border-b"><th>الرقم الوظيفي</th><th>الاسم</th></tr></thead>
+                                        <tbody>
+                                          {csvPreview.slice(0, 5).map((p, i) => (
+                                            <tr key={i} className="border-b last:border-0"><td className="py-1">{p.employeeId}</td><td className="py-1">{p.fullName}</td></tr>
+                                          ))}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <div className="flex gap-2">
+                                      <Button variant="outline" className="flex-1" onClick={() => setCsvPreview(null)}>إلغاء</Button>
+                                      <Button className="flex-1 font-bold" onClick={() => { uploadPastMutation.mutate(csvPreview); setCsvPreview(null); }}>تأكيد الرفع</Button>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <>
+                                    <Upload className="w-12 h-12 text-primary/40 mb-4" />
+                                    <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
+                                      <label className="cursor-pointer">
+                                        اختر الملف الآن
+                                        <input type="file" className="hidden" accept=".csv, .xlsx, .xls" onChange={handleCsvUpload} />
+                                      </label>
+                                    </Button>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </DialogContent>
+                        </Dialog>
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-2xl border border-primary/10 overflow-hidden shadow-sm">
+                      <div className="bg-primary/5 p-4 text-sm font-bold grid grid-cols-4 text-center border-b">
+                        <span>الرقم الوظيفي</span>
+                        <span>اسم الموظف</span>
+                        <span>نوع العقد</span>
+                        <span>تاريخ آخر عمرة</span>
+                      </div>
+                      <div className="max-h-[500px] overflow-y-auto divide-y">
+                        {pastParticipants && pastParticipants.length > 0 ? (
+                          pastParticipants.map((p, i) => (
+                            <div key={i} className="grid grid-cols-4 text-sm p-4 text-center hover:bg-primary/[0.02] transition-colors">
+                              <span className="font-mono text-primary font-medium">{p.employeeId}</span>
+                              <span className="font-bold">{p.fullName}</span>
+                              <span>{p.contractType}</span>
+                              <Badge variant="outline" className="mx-auto">{p.lastUmrahDate}</Badge>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="py-20 text-center text-muted-foreground">لا توجد بيانات مسجلة حالياً</div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </TabsContent>
               <TabsContent value="registered">
                 <div className="grid gap-6">
                   {pastParticipants && pastParticipants.length > 0 && (
