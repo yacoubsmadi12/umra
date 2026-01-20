@@ -547,35 +547,6 @@ export default function AdminDashboard() {
               </TabsContent>
               <TabsContent value="registered">
                 <div className="grid gap-6">
-                  {pastParticipants && pastParticipants.length > 0 && (
-                    <Card className="p-6 border-primary/20 shadow-md bg-primary/[0.02]">
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between border-b pb-4">
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-primary/10 rounded-lg">
-                              <Users className="w-6 h-6 text-primary" />
-                            </div>
-                            <div>
-                              <h3 className="font-bold text-lg">المقبولون في العمرة السابقة</h3>
-                              <p className="text-xs text-muted-foreground">قائمة الموظفين الذين تم استثناؤهم تلقائياً بناءً على بيانات الملف</p>
-                            </div>
-                          </div>
-                          <Badge className="text-md px-4 py-1">{pastParticipants.length} موظف</Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[300px] overflow-y-auto p-2">
-                          {pastParticipants.map((p, i) => (
-                            <div key={i} className="flex items-center justify-between p-3 bg-white rounded-xl border border-primary/5 shadow-sm">
-                              <div className="space-y-1">
-                                <p className="font-bold text-sm">{p.fullName}</p>
-                                <p className="text-[10px] text-muted-foreground">رقم وظيفي: {p.employeeId}</p>
-                              </div>
-                              <Badge variant="outline" className="text-[10px]">{p.lastUmrahDate}</Badge>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </Card>
-                  )}
                   {requests?.filter(r => r.status === 'approved' || r.status === 'pending').map(req => (
                     <Card key={req.id} className="p-8 border-primary/20 shadow-md">
                       <div className="flex items-center justify-between mb-6 border-b pb-4">
