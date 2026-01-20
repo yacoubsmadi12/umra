@@ -184,7 +184,13 @@ export default function Dashboard() {
                             <ObjectUploader 
                               verifyPassport 
                               onComplete={(res) => {
-                                updateRequest({ id: request.id, data: { passportUrl: res.url } });
+                                updateRequest({ 
+                                  id: request.id, 
+                                  data: { 
+                                    passportUrl: res.url,
+                                    passportData: res.extractedData || undefined
+                                  } 
+                                });
                               }}
                             >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer"><Upload className="w-3 h-3 ml-1"/> رفع</div></Button>
@@ -248,7 +254,13 @@ export default function Dashboard() {
                             <ObjectUploader 
                               verifyPassport
                               onComplete={(res) => {
-                                updateRequest({ id: request.id, data: { companion1PassportUrl: res.url } });
+                                updateRequest({ 
+                                  id: request.id, 
+                                  data: { 
+                                    companion1PassportUrl: res.url,
+                                    companion1PassportData: res.extractedData || undefined
+                                  } 
+                                });
                               }}
                             >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion1PassportUrl ? "تم الرفع" : "رفع"}</div></Button>
@@ -295,7 +307,13 @@ export default function Dashboard() {
                             <ObjectUploader 
                               verifyPassport
                               onComplete={(res) => {
-                                updateRequest({ id: request.id, data: { companion2PassportUrl: res.url } });
+                                updateRequest({ 
+                                  id: request.id, 
+                                  data: { 
+                                    companion2PassportUrl: res.url,
+                                    companion2PassportData: res.extractedData || undefined
+                                  } 
+                                });
                               }}
                             >
                               <Button variant="outline" size="sm" className="flex-1 text-xs" asChild><div className="flex items-center justify-center cursor-pointer">{request.companion2PassportUrl ? "تم الرفع" : "رفع"}</div></Button>

@@ -5,7 +5,7 @@ import { Upload, Loader2, Check, X } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface ObjectUploaderProps {
-  onComplete?: (result: { url: string; objectPath: string }) => void;
+  onComplete?: (result: { url: string; objectPath: string; extractedData?: string }) => void;
   buttonClassName?: string;
   children: ReactNode;
   verifyPassport?: boolean;
@@ -86,9 +86,14 @@ export function ObjectUploader({
 
   const confirmUpload = () => {
     if (tempResult) {
-      onComplete?.(tempResult);
+      onComplete?.({
+        ...tempResult,
+        extractedData: extractedData || undefined
+      });
     }
     setShowVerify(false);
+    setTempResult(null);
+    setExtractedData(null);
   };
 
   return (
