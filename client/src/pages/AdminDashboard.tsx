@@ -387,20 +387,39 @@ export default function AdminDashboard() {
                     </div>
 
                     {pastParticipants && pastParticipants.length > 0 && (
-                      <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10">
-                        <div className="flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                          <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                            <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
+                          </div>
+                          <Button variant="outline" size="sm" className="hover-elevate" onClick={() => {
+                            const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
+                              pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
+                            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                            const link = document.createElement("a");
+                            link.href = URL.createObjectURL(blob);
+                            link.download = "past_participants.csv";
+                            link.click();
+                          }}>تنزيل القائمة (CSV)</Button>
                         </div>
-                        <Button variant="outline" size="sm" className="hover-elevate" onClick={() => {
-                          const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
-                            pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
-                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                          const link = document.createElement("a");
-                          link.href = URL.createObjectURL(blob);
-                          link.download = "past_participants.csv";
-                          link.click();
-                        }}>تنزيل القائمة (CSV)</Button>
+                        
+                        <div className="bg-white rounded-xl border border-primary/10 overflow-hidden shadow-sm">
+                          <div className="bg-primary/5 p-2 text-[10px] font-bold grid grid-cols-3 text-center border-b">
+                            <span>الرقم الوظيفي</span>
+                            <span>الاسم</span>
+                            <span>تاريخ العمرة</span>
+                          </div>
+                          <div className="max-h-48 overflow-y-auto">
+                            {pastParticipants.map((p, i) => (
+                              <div key={i} className="grid grid-cols-3 text-[10px] p-2 text-center border-b last:border-0 hover:bg-primary/[0.02]">
+                                <span>{p.employeeId}</span>
+                                <span className="truncate px-1">{p.fullName}</span>
+                                <span>{p.lastUmrahDate}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
