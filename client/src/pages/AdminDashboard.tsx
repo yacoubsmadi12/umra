@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -280,32 +280,43 @@ export default function AdminDashboard() {
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>إدارة المقبولين في العمرة السابقة</DialogTitle>
+                    <DialogDescription>
+                      قم برفع ملف الـ CSV الخاص بالموظفين الذين تم قبولهم في الرحلة السابقة لتحديث النظام تلقائياً.
+                    </DialogDescription>
                   </DialogHeader>
                   <div className="space-y-6 py-4 font-tajawal">
                     <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 space-y-3 text-sm">
                       <h4 className="font-bold text-primary flex items-center gap-2">
                         <FileText className="w-4 h-4" /> إرشادات ملف الـ CSV
                       </h4>
-                      <p className="text-muted-foreground leading-relaxed">
-                        يرجى التأكد من أن ملف الـ CSV يحتوي على الأعمدة التالية بالترتيب أو بنفس المسميات لضمان صحة البيانات:
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 mt-2">
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">الرقم الوظيفي (employeeId)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">الاسم (fullName)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">عدد سنوات الخبره (yearsOfExperience)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">نوع العقد (contractType)</div>
-                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">تاريخ اخر عمره تم قبوله بها (lastUmrahDate)</div>
+                      <div className="text-muted-foreground leading-relaxed space-y-2">
+                        <p>يرجى التأكد من أن ملف الـ CSV يحتوي على الأعمدة التالية بالترتيب أو بنفس المسميات لضمان صحة البيانات:</p>
+                        <ul className="list-disc list-inside space-y-1 pr-2">
+                          <li><strong>الرقم الوظيفي:</strong> يجب أن يتطابق مع رقم الموظف في النظام.</li>
+                          <li><strong>الاسم:</strong> اسم الموظف الكامل.</li>
+                          <li><strong>عدد سنوات الخبره:</strong> رقم صحيح (مثلاً: 5).</li>
+                          <li><strong>نوع العقد:</strong> (مثلاً: full_time).</li>
+                          <li><strong>تاريخ اخر عمره:</strong> تاريخ القبول السابق.</li>
+                        </ul>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2 mt-4">
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">الرقم الوظيفي (employeeId)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">الاسم (fullName)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">عدد سنوات الخبره (yearsOfExperience)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center">نوع العقد (contractType)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px] text-center col-span-2">تاريخ اخر عمره تم قبوله بها (lastUmrahDate)</div>
                       </div>
                     </div>
 
-                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors">
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors bg-muted/10">
                       <Upload className="w-12 h-12 text-primary/40 mb-4" />
                       <div className="text-center space-y-2 mb-6">
-                        <p className="font-bold">قم باختيار ملف الـ CSV من جهازك</p>
-                        <p className="text-xs text-muted-foreground">سيتم تحديث قائمة المرفوضين تلقائياً بناءً على هذا الملف</p>
+                        <p className="font-bold text-lg">قم باختيار ملف الـ CSV من جهازك</p>
+                        <p className="text-sm text-muted-foreground">سيتم معالجة الملف وتحديث القائمة فور الاختيار</p>
                       </div>
-                      <Button variant="default" className="w-full h-12 text-lg font-bold shadow-lg" asChild>
+                      <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
                         <label className="cursor-pointer">
+                          <Upload className="w-5 h-5 ml-2" />
                           اختر الملف الآن
                           <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
                         </label>
@@ -313,9 +324,12 @@ export default function AdminDashboard() {
                     </div>
 
                     {pastParticipants && pastParticipants.length > 0 && (
-                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-dashed">
-                        <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
-                        <Button variant="ghost" size="sm" onClick={() => {
+                      <div className="flex items-center justify-between p-4 bg-primary/5 rounded-xl border border-primary/10">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                          <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
+                        </div>
+                        <Button variant="outline" size="sm" className="hover-elevate" onClick={() => {
                           const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
                             pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
                           const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -323,7 +337,7 @@ export default function AdminDashboard() {
                           link.href = URL.createObjectURL(blob);
                           link.download = "past_participants.csv";
                           link.click();
-                        }}>تحميل القائمة الحالية</Button>
+                        }}>تنزيل القائمة (CSV)</Button>
                       </div>
                     )}
                   </div>
@@ -338,6 +352,9 @@ export default function AdminDashboard() {
                 <DialogContent className="max-w-2xl">
                   <DialogHeader>
                     <DialogTitle>إعدادات البريد الإلكتروني</DialogTitle>
+                    <DialogDescription>
+                      تكوين إعدادات خادم البريد (SMTP) ورابط المسابقة النشطة.
+                    </DialogDescription>
                   </DialogHeader>
                   <Card>
                     <CardHeader>

@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { 
   Loader2, 
@@ -177,6 +177,9 @@ export default function Dashboard() {
               <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
                 <DialogHeader>
                   <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
+                  <DialogDescription className="text-center">
+                    اختر الطريقة التي تفضلها لتسديد تكاليف رحلة العمرة.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-6">
                   <div className="space-y-2">
@@ -208,6 +211,9 @@ export default function Dashboard() {
               <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>تحميل المستندات والمرافقين</DialogTitle>
+                  <DialogDescription>
+                    يرجى رفع صور واضحة لجواز السفر والوثائق المطلوبة لضمان سرعة معالجة طلبك.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="space-y-6 py-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -426,6 +432,9 @@ export default function Dashboard() {
               <DialogContent className="sm:max-w-xl">
                 <DialogHeader>
                   <DialogTitle>القواعد والسياسات</DialogTitle>
+                  <DialogDescription>
+                    الشروط والتعليمات المنظمة لبرنامج العمرة لموظفي زين.
+                  </DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto font-tajawal">
                   <section className="space-y-3">
