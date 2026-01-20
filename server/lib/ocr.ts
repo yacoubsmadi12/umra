@@ -87,8 +87,12 @@ export async function extractPassportData(url: string): Promise<string> {
 
         if (result && result.fields) {
           const f = result.fields;
+          // Combine firstName, middleName (if available), and lastName to get full name
+          // MRZ library usually provides firstName and lastName. firstName often contains middle names.
+          const fullName = [f.firstName, f.lastName].filter(Boolean).join(' ').replace(/</g, ' ').trim();
+          
           return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
-                 `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
+                 `اسم صاحب الجواز: ${fullName || 'غير متوفر'}\n` +
                  `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
                  `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
                  `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
