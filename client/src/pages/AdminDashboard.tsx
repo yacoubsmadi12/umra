@@ -33,16 +33,16 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     const handleTabChange = (e: any) => {
-      const tab = e.detail;
-      if (tab === "المقبولين بالعمرة الماضية") {
+      const tabId = e.detail;
+      if (tabId === "past") {
         setActiveTab("past_accepted");
-      } else if (tab === "فيد الانتظار") {
+      } else if (tabId === "pending") {
         setActiveTab("pending");
-      } else if (tab === "المقبولة") {
+      } else if (tabId === "approved") {
         setActiveTab("approved");
-      } else if (tab === "المرفوضة") {
+      } else if (tabId === "rejected") {
         setActiveTab("rejected");
-      } else if (tab === "المسجلون") {
+      } else if (tabId === "registered") {
         setActiveTab("registered");
       } else {
         setActiveTab("all");
