@@ -421,11 +421,25 @@ export default function AdminDashboard() {
                           <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                             <FileText className="w-4 h-4" /> بيانات صاحب الطلب
                           </Label>
-                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
-                            {req.passportData || "لم يتم استخراج البيانات بعد"}
+                          <div className="p-4 bg-primary/[0.03] rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[160px] leading-relaxed shadow-sm">
+                            {req.passportData ? (
+                              <div className="space-y-2">
+                                {req.passportData.split('\n').map((line: string, i: number) => {
+                                  const [label, ...valueParts] = line.split(':');
+                                  const value = valueParts.join(':').trim();
+                                  if (!label || !value) return <div key={i}>{line}</div>;
+                                  return (
+                                    <div key={i} className="flex justify-between items-center border-b border-primary/5 pb-1 last:border-0">
+                                      <span className="font-bold text-primary/70">{label}:</span>
+                                      <span className="text-foreground font-medium">{value}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : "لم يتم استخراج البيانات بعد"}
                           </div>
                           {req.passportUrl && (
-                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.passportUrl!, '_blank')}>
+                            <Button variant="ghost" size="sm" className="w-full text-xs hover:bg-primary/5" onClick={() => window.open(req.passportUrl!, '_blank')}>
                               <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
                             </Button>
                           )}
@@ -434,11 +448,25 @@ export default function AdminDashboard() {
                           <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                             <Users className="w-4 h-4" /> بيانات المرافق 1
                           </Label>
-                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
-                            {req.companion1PassportData || (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
+                          <div className="p-4 bg-primary/[0.03] rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[160px] leading-relaxed shadow-sm">
+                            {req.companion1PassportData ? (
+                              <div className="space-y-2">
+                                {req.companion1PassportData.split('\n').map((line: string, i: number) => {
+                                  const [label, ...valueParts] = line.split(':');
+                                  const value = valueParts.join(':').trim();
+                                  if (!label || !value) return <div key={i}>{line}</div>;
+                                  return (
+                                    <div key={i} className="flex justify-between items-center border-b border-primary/5 pb-1 last:border-0">
+                                      <span className="font-bold text-primary/70">{label}:</span>
+                                      <span className="text-foreground font-medium">{value}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
                           </div>
                           {req.companion1PassportUrl && (
-                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion1PassportUrl!, '_blank')}>
+                            <Button variant="ghost" size="sm" className="w-full text-xs hover:bg-primary/5" onClick={() => window.open(req.companion1PassportUrl!, '_blank')}>
                               <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
                             </Button>
                           )}
@@ -447,11 +475,25 @@ export default function AdminDashboard() {
                           <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
                             <Users className="w-4 h-4" /> بيانات المرافق 2
                           </Label>
-                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
-                            {req.companion2PassportData || (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
+                          <div className="p-4 bg-primary/[0.03] rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[160px] leading-relaxed shadow-sm">
+                            {req.companion2PassportData ? (
+                              <div className="space-y-2">
+                                {req.companion2PassportData.split('\n').map((line: string, i: number) => {
+                                  const [label, ...valueParts] = line.split(':');
+                                  const value = valueParts.join(':').trim();
+                                  if (!label || !value) return <div key={i}>{line}</div>;
+                                  return (
+                                    <div key={i} className="flex justify-between items-center border-b border-primary/5 pb-1 last:border-0">
+                                      <span className="font-bold text-primary/70">{label}:</span>
+                                      <span className="text-foreground font-medium">{value}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
                           </div>
                           {req.companion2PassportUrl && (
-                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion2PassportUrl!, '_blank')}>
+                            <Button variant="ghost" size="sm" className="w-full text-xs hover:bg-primary/5" onClick={() => window.open(req.companion2PassportUrl!, '_blank')}>
                               <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
                             </Button>
                           )}

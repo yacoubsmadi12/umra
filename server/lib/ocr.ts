@@ -66,11 +66,11 @@ export async function extractPassportData(url: string): Promise<string> {
           const result = parse(consistentLines.slice(-2)); // Use last two lines
           if (result && result.fields) {
             const f = result.fields;
-            return `رقم الجواز: ${f.documentNumber || ''}\n` +
+            return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
                    `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
                    `الجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\n` +
                    `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
-                   `تاريخ الانتهاء: ${f.expirationDate || ''}`;
+                   `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
           }
         }
       } catch (e) {
@@ -80,13 +80,16 @@ export async function extractPassportData(url: string): Promise<string> {
 
     // Fallback: If MRZ parsing fails, try to extract some basic info using regex
     const passportNoMatch = text.match(/[A-Z][0-9]{6,8}/);
-    const nameMatch = text.match(/[A-Z]{3,}\s[A-Z]{3,}(\s[A-Z]{3,})*/);
+    // Adjusted name regex to be more inclusive
+    const nameMatch = text.match(/[A-Z]{2,}(\s[A-Z]{2,})+/);
     
     if (passportNoMatch || nameMatch) {
-      return `تم استخراج بعض البيانات (يرجى التأكد):\n` +
-             `الاسم: ${nameMatch ? nameMatch[0] : 'غير واضح'}\n` +
-             `رقم الجواز: ${passportNoMatch ? passportNoMatch[0] : 'غير واضح'}\n\n` +
-             `يرجى مراجعة الصورة وتأكيد البيانات يدوياً.`;
+      return `رقم الجواز: ${passportNoMatch ? passportNoMatch[0] : 'غير واضح'}\n` +
+             `اسم صاحب الجواز: ${nameMatch ? nameMatch[0] : 'غير واضح'}\n` +
+             `الجنس: غير واضح\n` +
+             `الرقم الوطني: غير واضح\n` +
+             `تاريخ الانتهاء: غير واضح\n\n` +
+             `ملاحظة: لم يتم التعرف على كافة البيانات تلقائياً، يرجى تعبئتها يدوياً.`;
     }
 
     return "لم يتم التعرف على صيغة الجواز (MRZ) بدقة. يرجى التأكد من وضوح الصورة ومراجعة البيانات يدوياً.";
