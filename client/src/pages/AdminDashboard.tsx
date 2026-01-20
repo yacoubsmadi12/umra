@@ -271,14 +271,64 @@ export default function AdminDashboard() {
           <header className="flex items-center justify-between">
             <h1 className="text-2xl font-bold font-tajawal text-primary">لوحة تحكم المشرف</h1>
             <div className="flex items-center gap-4">
-              <div className="relative">
-                <Button variant="outline" size="sm" className="gap-2" asChild>
-                  <label className="cursor-pointer">
-                    <Upload className="w-4 h-4" /> رفع ملف المقبولين (CSV)
-                    <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
-                  </label>
-                </Button>
-              </div>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Users className="w-4 h-4" /> المقبولين بالعمرة الماضية
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl">
+                  <DialogHeader>
+                    <DialogTitle>إدارة المقبولين في العمرة السابقة</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-6 py-4 font-tajawal">
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 space-y-3 text-sm">
+                      <h4 className="font-bold text-primary flex items-center gap-2">
+                        <FileText className="w-4 h-4" /> إرشادات ملف الـ CSV
+                      </h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        يرجى التأكد من أن ملف الـ CSV يحتوي على الأعمدة التالية بالترتيب أو بنفس المسميات لضمان صحة البيانات:
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 mt-2">
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">الرقم الوظيفي (employeeId)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">الاسم (fullName)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">عدد سنوات الخبره (yearsOfExperience)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">نوع العقد (contractType)</div>
+                        <div className="p-2 bg-white rounded border border-primary/5 font-mono text-[10px]">تاريخ اخر عمره تم قبوله بها (lastUmrahDate)</div>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col items-center justify-center border-2 border-dashed border-primary/20 rounded-2xl p-8 hover:bg-primary/[0.02] transition-colors">
+                      <Upload className="w-12 h-12 text-primary/40 mb-4" />
+                      <div className="text-center space-y-2 mb-6">
+                        <p className="font-bold">قم باختيار ملف الـ CSV من جهازك</p>
+                        <p className="text-xs text-muted-foreground">سيتم تحديث قائمة المرفوضين تلقائياً بناءً على هذا الملف</p>
+                      </div>
+                      <Button variant="default" className="w-full h-12 text-lg font-bold shadow-lg" asChild>
+                        <label className="cursor-pointer">
+                          اختر الملف الآن
+                          <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
+                        </label>
+                      </Button>
+                    </div>
+
+                    {pastParticipants && pastParticipants.length > 0 && (
+                      <div className="flex items-center justify-between p-4 bg-muted/30 rounded-xl border border-dashed">
+                        <span className="text-sm font-medium">عدد المسجلين حالياً: {pastParticipants.length} موظف</span>
+                        <Button variant="ghost" size="sm" onClick={() => {
+                          const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
+                            pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
+                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                          const link = document.createElement("a");
+                          link.href = URL.createObjectURL(blob);
+                          link.download = "past_participants.csv";
+                          link.click();
+                        }}>تحميل القائمة الحالية</Button>
+                      </div>
+                    )}
+                  </div>
+                </DialogContent>
+              </Dialog>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2">
@@ -426,25 +476,6 @@ export default function AdminDashboard() {
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
               <TabsContent value="registered">
                 <div className="grid gap-6">
-                  {pastParticipants && pastParticipants.length > 0 && (
-                    <Card className="p-4 bg-muted/30 border-dashed border-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-5 h-5 text-primary" />
-                          <span className="font-bold">قائمة المقبولين سابقاً ({pastParticipants.length})</span>
-                        </div>
-                        <Button variant="ghost" size="sm" onClick={() => {
-                          const csv = "الرقم الوظيفي,الاسم,عدد سنوات الخبره,نوع العقد,تاريخ اخر عمره تم قبوله بها\n" + 
-                            pastParticipants.map(p => `${p.employeeId},${p.fullName},${p.yearsOfExperience},${p.contractType},${p.lastUmrahDate}`).join("\n");
-                          const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-                          const link = document.createElement("a");
-                          link.href = URL.createObjectURL(blob);
-                          link.download = "past_participants.csv";
-                          link.click();
-                        }}>تصدير CSV</Button>
-                      </div>
-                    </Card>
-                  )}
                   {requests?.filter(r => r.status === 'approved' || r.status === 'pending').map(req => (
                     <Card key={req.id} className="p-8 border-primary/20 shadow-md">
                       <div className="flex items-center justify-between mb-6 border-b pb-4">
