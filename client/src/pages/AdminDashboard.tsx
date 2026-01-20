@@ -19,6 +19,8 @@ import { api } from "@shared/routes";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
+import * as XLSX from "xlsx";
+
 export default function AdminDashboard() {
   const { data: requests, isLoading } = useAllRequests();
   const { mutate: updateRequest } = useUpdateRequest();
@@ -70,22 +72,36 @@ export default function AdminDashboard() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    import("papaparse").then((Papa) => {
-      Papa.parse(file, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => {
-          const mapped = results.data.map((row: any) => ({
-            employeeId: row["الرقم الوظيفي"] || row["employeeId"],
-            fullName: row["الاسم"] || row["fullName"],
-            yearsOfExperience: parseInt(row["عدد سنوات الخبره"] || row["yearsOfExperience"] || "0"),
-            contractType: row["نوع العقد"] || row["contractType"],
-            lastUmrahDate: row["تاريخ اخر عمره تم قبوله بها"] || row["lastUmrahDate"]
-          }));
-          setCsvPreview(mapped);
-        }
-      });
-    });
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target?.result;
+      const wb = XLSX.read(bstr, { type: "binary" });
+      const wsname = wb.SheetNames[0];
+      const ws = wb.Sheets[wsname];
+      const data = XLSX.utils.sheet_to_json(ws, { header: 1 });
+      
+      const headers = data[0] as string[];
+      const rows = data.slice(1) as any[][];
+
+      const getIdx = (name: string) => headers.findIndex(h => h && h.toString().includes(name));
+
+      const empIdIdx = getIdx("الرقم الوظيفي") !== -1 ? getIdx("الرقم الوظيفي") : getIdx("employeeId");
+      const nameIdx = getIdx("الاسم") !== -1 ? getIdx("الاسم") : getIdx("fullName");
+      const expIdx = getIdx("عدد سنوات الخبره") !== -1 ? getIdx("عدد سنوات الخبره") : getIdx("yearsOfExperience");
+      const contractIdx = getIdx("نوع العقد") !== -1 ? getIdx("نوع العقد") : getIdx("contractType");
+      const dateIdx = getIdx("تاريخ اخر عمره") !== -1 ? getIdx("تاريخ اخر عمره") : getIdx("lastUmrahDate");
+
+      const mapped = rows.map(row => ({
+        employeeId: row[empIdIdx]?.toString() || "",
+        fullName: row[nameIdx]?.toString() || "",
+        yearsOfExperience: parseInt(row[expIdx]?.toString() || "0"),
+        contractType: row[contractIdx]?.toString() || "",
+        lastUmrahDate: row[dateIdx]?.toString() || ""
+      })).filter(p => p.employeeId);
+
+      setCsvPreview(mapped);
+    };
+    reader.readAsBinaryString(file);
   };
 
   const updateEmailMutation = useMutation({
@@ -362,8 +378,8 @@ export default function AdminDashboard() {
                           <Button variant="default" size="lg" className="w-full font-bold shadow-lg" asChild>
                             <label className="cursor-pointer">
                               <Upload className="w-5 h-5 ml-2" />
-                              اختر الملف الآن
-                              <input type="file" className="hidden" accept=".csv" onChange={handleCsvUpload} />
+                              اختر الملف الآن (Excel أو CSV)
+                              <input type="file" className="hidden" accept=".csv, .xlsx, .xls" onChange={handleCsvUpload} />
                             </label>
                           </Button>
                         </>
