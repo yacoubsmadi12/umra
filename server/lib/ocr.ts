@@ -44,54 +44,54 @@ export async function extractPassportData(url: string): Promise<string> {
     }
 
     // Attempt to find MRZ lines
-    const lines = text.split('\n').map(l => l.trim()).filter(l => l.length >= 30);
-    // Find lines that look like MRZ (TD3 is 44, TD1 is 30) - allow some noise like '<<'
-    const mrzLines = lines.filter(line => /^[A-Z0-9<]{30,}$/.test(line.replace(/\s/g, '')));
+    const rawLines = text.split('\n').map(l => l.trim());
+    const cleanedLines = rawLines.map(line => line.replace(/\s/g, '').replace(/O/g, '0'));
+    
+    // Find lines that look like MRZ (TD3 is 44, TD1 is 30)
+    const mrzLines = cleanedLines.filter(line => /^[A-Z0-9<]{30,}$/.test(line));
 
     if (mrzLines.length >= 2) {
       try {
         const { parse } = await import('mrz');
-        // Clean lines: remove spaces and handle common OCR errors (like O instead of 0)
-        const cleanedLines = mrzLines.map(line => line.replace(/\s/g, '').replace(/O/g, '0'));
         
-        // Standardize lines to expected lengths (44 for TD3, 30 for TD1, etc)
-        const standardizedLines = cleanedLines.map(line => {
-          if (line.length >= 44) return line.substring(0, 44);
-          if (line.length >= 36) return line.substring(0, 36);
-          if (line.length >= 30) return line.substring(0, 30);
-          return line;
-        });
-
-        const targetLength = standardizedLines[0].length;
-        // Take the last two or three lines depending on MRZ type
-        const possibleMrz = standardizedLines.filter(l => l.length === targetLength).slice(-3);
-
-        if (possibleMrz.length >= 2) {
-          try {
-            const result = parse(possibleMrz);
-            if (result && result.fields) {
-              const f = result.fields;
-              return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
-                     `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
-                     `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
-                     `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
-                     `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
-            }
-          } catch (parseErr) {
-            console.warn("MRZ parse failed, trying subset:", parseErr);
-            // Try just the last 2 lines if 3 failed
-            if (possibleMrz.length === 3) {
-              const result2 = parse(possibleMrz.slice(1));
-              if (result2 && result2.fields) {
-                const f = result2.fields;
-                return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
-                       `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
-                       `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
-                       `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
-                       `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
-              }
-            }
+        // Try to find a valid sequence of MRZ lines
+        // For TD3 (2 lines), TD2 (2 lines), or TD1 (3 lines)
+        let result = null;
+        
+        // Try 3 lines first (TD1)
+        if (mrzLines.length >= 3) {
+          for (let i = 0; i <= mrzLines.length - 3; i++) {
+            try {
+              result = parse(mrzLines.slice(i, i + 3));
+              if (result && result.valid) break;
+            } catch (e) {}
           }
+        }
+        
+        // Try 2 lines (TD3/TD2) if 3 lines didn't work
+        if (!result || !result.valid) {
+          for (let i = 0; i <= mrzLines.length - 2; i++) {
+            try {
+              result = parse(mrzLines.slice(i, i + 2));
+              if (result && result.valid) break;
+            } catch (e) {}
+          }
+        }
+
+        // If still no valid result, take the last 2 lines as a fallback
+        if (!result) {
+          try {
+            result = parse(mrzLines.slice(-2));
+          } catch (e) {}
+        }
+
+        if (result && result.fields) {
+          const f = result.fields;
+          return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
+                 `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
+                 `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
+                 `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
+                 `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
         }
       } catch (e) {
         console.error("MRZ Parsing Error:", e);
