@@ -227,6 +227,20 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // --- AI Trigger Route ---
+  app.post("/api/ai/trigger", requireAuth, async (req, res) => {
+    try {
+      const { type, url } = req.body;
+      if (!url) return res.status(400).json({ message: "URL is required" });
+
+      const result = await extractPassportData(url);
+      res.json({ result });
+    } catch (error) {
+      console.error("AI Trigger Error:", error);
+      res.status(500).json({ message: "فشل استخراج البيانات تلقائياً، يرجى التأكد من الصورة يدوياً." });
+    }
+  });
+
   // --- Users, Materials & Colleagues ---
 
   app.get("/api/users", requireAuth, async (req, res) => {
