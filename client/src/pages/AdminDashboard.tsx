@@ -22,7 +22,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 export default function AdminDashboard() {
   const { data: requests, isLoading } = useAllRequests();
   const { mutate: updateRequest } = useUpdateRequest();
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [selectedColleagues, setSelectedColleagues] = useState<number[]>([]);
   const [isColleaguesDialogOpen, setIsColleaguesDialogOpen] = useState(false);
@@ -50,7 +49,7 @@ export default function AdminDashboard() {
     queryKey: [api.email.getSettings.path],
   });
 
-  const { data: pastParticipants, isLoading: isLoadingPast } = useQuery<any[]>({
+  const { data: pastParticipants } = useQuery<any[]>({
     queryKey: ["/api/past-participants"],
   });
 
@@ -86,53 +85,6 @@ export default function AdminDashboard() {
       });
     });
   };
-
-  const PastParticipantsView = () => (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>استيراد المقبولين السابقين</CardTitle>
-          <div className="flex items-center gap-2">
-            <Input type="file" accept=".csv" onChange={handleCsvUpload} className="hidden" id="csv-upload" />
-            <Button asChild variant="outline">
-              <label htmlFor="csv-upload" className="cursor-pointer">
-                <Upload className="w-4 h-4 mr-2" /> ارفاق ملف CSV/Excel
-              </label>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-4">
-            يجب أن يحتوي الملف على الأعمدة التالية: الرقم الوظيفي، الاسم، عدد سنوات الخبره، نوع العقد، تاريخ اخر عمره تم قبوله بها.
-          </p>
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="p-2 text-right">الرقم الوظيفي</th>
-                  <th className="p-2 text-right">الاسم</th>
-                  <th className="p-2 text-right">الخبرة</th>
-                  <th className="p-2 text-right">نوع العقد</th>
-                  <th className="p-2 text-right">آخر عمرة</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pastParticipants?.map((p) => (
-                  <tr key={p.id} className="border-t">
-                    <td className="p-2">{p.employeeId}</td>
-                    <td className="p-2">{p.fullName}</td>
-                    <td className="p-2">{p.yearsOfExperience} سنة</td>
-                    <td className="p-2">{p.contractType}</td>
-                    <td className="p-2">{p.lastUmrahDate}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
 
   const updateEmailMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -183,82 +135,11 @@ export default function AdminDashboard() {
 
   const handleStatusUpdate = (id: number, status: 'approved' | 'rejected', comments?: string) => {
     updateRequest({ id, data: { status, adminComments: comments } });
-    setSelectedRequest(null);
-    setRejectReason("");
   };
 
   const handleFileUpload = (id: number, type: 'visa' | 'ticket', url: string) => {
     updateRequest({ id, data: type === 'visa' ? { visaUrl: url } : { ticketUrl: url } });
   };
-
-  const EmailSettingsForm = () => (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Mail className="w-5 h-5" />
-          إعدادات خادم البريد (SMTP)
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={(e) => {
-          e.preventDefault();
-          updateEmailMutation.mutate(smtpForm);
-        }} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Host / الخادم</Label>
-              <Input 
-                value={smtpForm.host} 
-                onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
-                placeholder="smtp.example.com" 
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Port / المنفذ</Label>
-              <Input 
-                type="number"
-                value={smtpForm.port} 
-                onChange={e => setSmtpForm({...smtpForm, port: parseInt(e.target.value)})}
-                placeholder="587" 
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Username / اسم المستخدم</Label>
-              <Input 
-                value={smtpForm.user} 
-                onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Password / كلمة المرور</Label>
-              <Input 
-                type="password"
-                value={smtpForm.password} 
-                onChange={e => setSmtpForm({...smtpForm, password: e.target.value})}
-                required
-              />
-            </div>
-            <div className="space-y-2 md:col-span-2">
-              <Label>From Email / البريد المرسل</Label>
-              <Input 
-                type="email"
-                value={smtpForm.fromEmail} 
-                onChange={e => setSmtpForm({...smtpForm, fromEmail: e.target.value})}
-                placeholder="no-reply@zain.com"
-                required
-              />
-            </div>
-          </div>
-          <Button type="submit" className="w-full" disabled={updateEmailMutation.isPending}>
-            {updateEmailMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
-          </Button>
-        </form>
-      </CardContent>
-    </Card>
-  );
 
   const RequestList = ({ filterStatus }: { filterStatus: string }) => {
     const filtered = requests?.filter(r => filterStatus === 'all' || r.status === filterStatus);
@@ -268,7 +149,7 @@ export default function AdminDashboard() {
     return (
       <div className="grid gap-4">
         {filtered.map((req) => (
-          <Card key={req.id || `req-${req.id}`} className="p-6 border-l-4 border-l-primary flex flex-col md:flex-row justify-between gap-6">
+          <Card key={req.id} className="p-6 border-l-4 border-l-primary flex flex-col md:flex-row justify-between gap-6">
             <div className="space-y-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-lg">{req.user.fullName}</h3>
@@ -292,31 +173,6 @@ export default function AdminDashboard() {
                       <FileText className="w-3 h-3" />
                       جواز السفر
                     </a>
-                  )}
-                </div>
-              )}
-
-              {req.needsCompanion && (
-                <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {req.companion1Name && (
-                    <div className="p-2 rounded bg-muted/50 text-xs flex justify-between items-center border">
-                      <span className="font-semibold">المرافق 1: {req.companion1Name}</span>
-                      {req.companion1PassportUrl && (
-                        <a href={req.companion1PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline flex items-center gap-1">
-                          <FileText className="w-3 h-3" /> جواز السفر
-                        </a>
-                      )}
-                    </div>
-                  )}
-                  {req.companion2Name && (
-                    <div className="p-2 rounded bg-muted/50 text-xs flex justify-between items-center border">
-                      <span className="font-semibold">المرافق 2: {req.companion2Name}</span>
-                      {req.companion2PassportUrl && (
-                        <a href={req.companion2PassportUrl} target="_blank" rel="noreferrer" className="text-primary underline flex items-center gap-1">
-                          <FileText className="w-3 h-3" /> جواز السفر
-                        </a>
-                      )}
-                    </div>
                   )}
                 </div>
               )}
@@ -423,7 +279,72 @@ export default function AdminDashboard() {
                   <DialogHeader>
                     <DialogTitle>إعدادات البريد الإلكتروني</DialogTitle>
                   </DialogHeader>
-                  <EmailSettingsForm />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Mail className="w-5 h-5" />
+                        إعدادات خادم البريد (SMTP)
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <form onSubmit={(e) => {
+                        e.preventDefault();
+                        updateEmailMutation.mutate(smtpForm);
+                      }} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label>Host / الخادم</Label>
+                            <Input 
+                              value={smtpForm.host} 
+                              onChange={e => setSmtpForm({...smtpForm, host: e.target.value})}
+                              placeholder="smtp.example.com" 
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Port / المنفذ</Label>
+                            <Input 
+                              type="number"
+                              value={smtpForm.port} 
+                              onChange={e => setSmtpForm({...smtpForm, port: parseInt(e.target.value)})}
+                              placeholder="587" 
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Username / اسم المستخدم</Label>
+                            <Input 
+                              value={smtpForm.user} 
+                              onChange={e => setSmtpForm({...smtpForm, user: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Password / كلمة المرور</Label>
+                            <Input 
+                              type="password"
+                              value={smtpForm.password} 
+                              onChange={e => setSmtpForm({...smtpForm, password: e.target.value})}
+                              required
+                            />
+                          </div>
+                          <div className="space-y-2 md:col-span-2">
+                            <Label>From Email / البريد المرسل</Label>
+                            <Input 
+                              type="email"
+                              value={smtpForm.fromEmail} 
+                              onChange={e => setSmtpForm({...smtpForm, fromEmail: e.target.value})}
+                              placeholder="no-reply@zain.com"
+                              required
+                            />
+                          </div>
+                        </div>
+                        <Button type="submit" className="w-full" disabled={updateEmailMutation.isPending}>
+                          {updateEmailMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "حفظ الإعدادات"}
+                        </Button>
+                      </form>
+                    </CardContent>
+                  </Card>
                 </DialogContent>
               </Dialog>
               <Badge variant="outline" className="text-lg px-4 py-1">
@@ -475,6 +396,12 @@ export default function AdminDashboard() {
           </Dialog>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-4 bg-muted/50 p-1">
+              <TabsTrigger value="pending">قيد الانتظار</TabsTrigger>
+              <TabsTrigger value="approved">المقبولة</TabsTrigger>
+              <TabsTrigger value="rejected">المرفوضة</TabsTrigger>
+              <TabsTrigger value="registered">المسجلون</TabsTrigger>
+            </TabsList>
             <div className="mt-6">
               <TabsContent value="pending"><RequestList filterStatus="pending" /></TabsContent>
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
@@ -529,32 +456,11 @@ export default function AdminDashboard() {
                             </Button>
                           )}
                         </div>
-                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion1PassportUrl!, '_blank')}>
-                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
-                            </Button>
-                          )}
-                        </div>
-                        <div className="space-y-3">
-                          <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
-                            <Users className="w-4 h-4" /> بيانات المرافق 2
-                          </Label>
-                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
-                            {req.companion2PassportData || (req.needsCompanion && req.companion2Name ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
-                          </div>
-                          {req.companion2PassportUrl && (
-                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion2PassportUrl!, '_blank')}>
-                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
-                            </Button>
-                          )}
-                        </div>
                       </div>
                     </Card>
                   ))}
                 </div>
               </TabsContent>
-              <TabsContent value="all"><RequestList filterStatus="all" /></TabsContent>
-              <TabsContent value="past"><PastParticipantsView /></TabsContent>
-              <TabsContent value="settings"><EmailSettingsForm /></TabsContent>
             </div>
           </Tabs>
         </div>
