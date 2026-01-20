@@ -118,6 +118,9 @@ export class DatabaseStorage implements IStorage {
       companion1PassportUrl: umrahRequests.companion1PassportUrl,
       companion2Name: umrahRequests.companion2Name,
       companion2PassportUrl: umrahRequests.companion2PassportUrl,
+      passportData: umrahRequests.passportData,
+      companion1PassportData: umrahRequests.companion1PassportData,
+      companion2PassportData: umrahRequests.companion2PassportData,
       assignedColleagueIds: umrahRequests.assignedColleagueIds,
       createdAt: umrahRequests.createdAt,
       user: users
