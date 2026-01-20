@@ -119,18 +119,6 @@ export default function Dashboard() {
           <header className="flex items-center justify-between border-b pb-4">
             <h1 className="text-3xl font-bold font-tajawal text-primary">الرئيسية</h1>
             <div className="flex gap-2">
-              <Link href="/prayers">
-                <Button variant="outline" size="sm" className="gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
-                  <Heart className="w-4 h-4 text-primary" />
-                  الأدعية 🙌
-                </Button>
-              </Link>
-              <Link href="/prayer-times">
-                <Button variant="outline" size="sm" className="gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors">
-                  <Timer className="w-4 h-4 text-primary" />
-                  مواقيت الصلاة
-                </Button>
-              </Link>
               <Badge variant="secondary" className="text-md px-4 py-1">طلب رقم #{request.id}</Badge>
             </div>
           </header>
@@ -140,7 +128,21 @@ export default function Dashboard() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Box 1: Booklet */}
+            {/* Box 1: Prayers (New) */}
+            <Link href="/prayers">
+              <DashboardBox icon={Heart} title="الأدعية 🙌">
+                <p className="text-xs text-muted-foreground">تصفح مجموعة من الأدعية المختارة</p>
+              </DashboardBox>
+            </Link>
+
+            {/* Box 2: Prayer Times (New) */}
+            <Link href="/prayer-times">
+              <DashboardBox icon={Timer} title="مواقيت الصلاة">
+                <p className="text-xs text-muted-foreground">مواقيت الصلاة لليوم</p>
+              </DashboardBox>
+            </Link>
+
+            {/* Box 3: Booklet */}
             <DashboardBox 
               icon={BookOpen} 
               title="كتيب زين للعمرة" 
