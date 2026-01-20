@@ -104,21 +104,45 @@ export default function PrayersPage() {
                           <span className="text-sm font-bold text-center text-foreground group-hover:text-primary transition-colors">{cat}</span>
                         </motion.div>
                       </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-islamic-pattern bg-fixed">
-                        <DialogHeader>
-                          <DialogTitle className="text-right text-2xl font-bold text-primary mb-4">{cat}</DialogTitle>
+                      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-primary/20 shadow-2xl p-0">
+                        <DialogHeader className="p-6 pb-2 sticky top-0 bg-inherit z-10 border-b border-primary/10">
+                          <DialogTitle className="text-right text-2xl font-bold text-primary flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 p-2">
+                              <img src={iconUrl} alt={cat} className="w-full h-full object-contain" />
+                            </div>
+                            {cat}
+                          </DialogTitle>
                         </DialogHeader>
-                        <div className="space-y-4 pt-2">
-                          {catPrayers.map((p) => (
-                            <Card key={p.id} className="border-primary/10 shadow-sm hover:shadow-md transition-shadow bg-white/80 backdrop-blur-sm dark:bg-card/80">
-                              <CardContent className="p-6 space-y-4">
-                                <h4 className="font-bold text-primary text-xl border-b border-primary/10 pb-2">{p.title}</h4>
-                                <p className="text-xl leading-relaxed text-foreground/90 font-medium text-center">{p.content}</p>
-                                {p.translation && (
-                                  <p className="text-sm text-muted-foreground italic border-t border-primary/5 pt-2">{p.translation}</p>
-                                )}
-                              </CardContent>
-                            </Card>
+                        <div className="p-6 space-y-6 pt-4">
+                          {catPrayers.map((p, idx) => (
+                            <motion.div
+                              key={p.id}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: idx * 0.1 }}
+                            >
+                              <Card className="border-primary/10 shadow-sm bg-white/50 dark:bg-card/50 overflow-hidden relative group">
+                                <div className="absolute top-0 right-0 w-1 h-full bg-primary/20 group-hover:bg-primary transition-colors" />
+                                <CardContent className="p-6 space-y-4">
+                                  <div className="flex justify-between items-start gap-4">
+                                    <h4 className="font-bold text-primary text-xl leading-tight">{p.title}</h4>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/40 hover:text-primary rounded-full">
+                                      <Heart className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                  <div className="bg-primary/5 rounded-2xl p-6 border border-primary/5">
+                                    <p className="text-2xl leading-relaxed text-foreground/90 font-medium text-center font-cairo">
+                                      {p.content}
+                                    </p>
+                                  </div>
+                                  {p.translation && (
+                                    <p className="text-sm text-muted-foreground italic border-t border-primary/5 pt-3 pr-2">
+                                      {p.translation}
+                                    </p>
+                                  )}
+                                </CardContent>
+                              </Card>
+                            </motion.div>
                           ))}
                         </div>
                       </DialogContent>
