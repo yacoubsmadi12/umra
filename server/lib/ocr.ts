@@ -66,13 +66,11 @@ export async function extractPassportData(url: string): Promise<string> {
           const result = parse(consistentLines.slice(-2)); // Use last two lines
           if (result && result.fields) {
             const f = result.fields;
-            return `الاسم: ${f.firstName || ''} ${f.lastName || ''}\n` +
-                   `رقم الجواز: ${f.documentNumber || ''}\n` +
-                   `الجنسية: ${f.nationality || ''}\n` +
-                   `تاريخ الميلاد: ${f.birthDate || ''}\n` +
-                   `تاريخ الانتهاء: ${f.expirationDate || ''}\n` +
+            return `رقم الجواز: ${f.documentNumber || ''}\n` +
+                   `اسم صاحب الجواز: ${f.firstName || ''} ${f.lastName || ''}\n` +
                    `الجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\n` +
-                   `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}`;
+                   `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
+                   `تاريخ الانتهاء: ${f.expirationDate || ''}`;
           }
         }
       } catch (e) {
