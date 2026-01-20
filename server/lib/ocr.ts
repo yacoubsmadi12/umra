@@ -52,7 +52,6 @@ export async function extractPassportData(url: string): Promise<string> {
       try {
         const { parse } = await import('mrz');
         // Standardize lines to expected lengths (44 for TD3, 30 for TD1, etc)
-        // Some OCR errors add a character or two, so we trim to common lengths
         const standardizedLines = mrzLines.map(line => {
           if (line.length >= 44) return line.substring(0, 44);
           if (line.length >= 36) return line.substring(0, 36);
@@ -60,15 +59,20 @@ export async function extractPassportData(url: string): Promise<string> {
           return line;
         });
 
-        // Filter out lines that don't match the first line's length to avoid 'mrz' lib errors
         const targetLength = standardizedLines[0].length;
         const consistentLines = standardizedLines.filter(l => l.length === targetLength);
 
         if (consistentLines.length >= 2) {
-          const result = parse(consistentLines);
+          const result = parse(consistentLines.slice(-2)); // Use last two lines
           if (result && result.fields) {
             const f = result.fields;
-            return `الاسم: ${f.firstName} ${f.lastName}\nالجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\nرقم الجواز: ${f.documentNumber}\nتاريخ الانتهاء: ${f.expirationDate}\nالجنسية: ${f.nationality}\nالرقم الوطني: ${f.optional1 || 'غير متوفر'}`;
+            return `الاسم: ${f.firstName || ''} ${f.lastName || ''}\n` +
+                   `رقم الجواز: ${f.documentNumber || ''}\n` +
+                   `الجنسية: ${f.nationality || ''}\n` +
+                   `تاريخ الميلاد: ${f.birthDate || ''}\n` +
+                   `تاريخ الانتهاء: ${f.expirationDate || ''}\n` +
+                   `الجنس: ${f.sex === 'male' ? 'ذكر' : 'أنثى'}\n` +
+                   `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}`;
           }
         }
       } catch (e) {
@@ -76,8 +80,18 @@ export async function extractPassportData(url: string): Promise<string> {
       }
     }
 
-    // Clean up and format the text a bit if MRZ parsing fails
-    return text.split('\n').filter(line => line.trim().length > 0).join('\n');
+    // Fallback: If MRZ parsing fails, try to extract some basic info using regex
+    const passportNoMatch = text.match(/[A-Z][0-9]{6,8}/);
+    const nameMatch = text.match(/[A-Z]{3,}\s[A-Z]{3,}(\s[A-Z]{3,})*/);
+    
+    if (passportNoMatch || nameMatch) {
+      return `تم استخراج بعض البيانات (يرجى التأكد):\n` +
+             `الاسم: ${nameMatch ? nameMatch[0] : 'غير واضح'}\n` +
+             `رقم الجواز: ${passportNoMatch ? passportNoMatch[0] : 'غير واضح'}\n\n` +
+             `يرجى مراجعة الصورة وتأكيد البيانات يدوياً.`;
+    }
+
+    return "لم يتم التعرف على صيغة الجواز (MRZ) بدقة. يرجى التأكد من وضوح الصورة ومراجعة البيانات يدوياً.";
   } catch (error: any) {
     console.error("Local OCR Extraction Error:", error);
     return "خطأ في استخراج البيانات برمجياً: يرجى مراجعة الجواز يدوياً.";
