@@ -521,6 +521,24 @@ export default function AdminDashboard() {
                             <Users className="w-4 h-4" /> بيانات المرافق 2
                           </Label>
                           <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
+                            {req.companion2PassportData || (req.needsCompanion ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
+                          </div>
+                          {req.companion2PassportUrl && (
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion2PassportUrl!, '_blank')}>
+                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
+                            </Button>
+                          )}
+                        </div>
+                            <Button variant="ghost" size="sm" className="w-full text-xs" onClick={() => window.open(req.companion1PassportUrl!, '_blank')}>
+                              <Download className="w-3 h-3 ml-1" /> عرض الجواز المرفق
+                            </Button>
+                          )}
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold text-muted-foreground flex items-center gap-2">
+                            <Users className="w-4 h-4" /> بيانات المرافق 2
+                          </Label>
+                          <div className="p-4 bg-primary/5 rounded-xl text-sm whitespace-pre-wrap border border-primary/10 min-h-[150px] leading-relaxed">
                             {req.companion2PassportData || (req.needsCompanion && req.companion2Name ? "لم يتم استخراج البيانات" : "لا يوجد مرافق")}
                           </div>
                           {req.companion2PassportUrl && (
