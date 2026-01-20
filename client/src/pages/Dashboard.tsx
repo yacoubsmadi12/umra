@@ -28,7 +28,8 @@ import {
   Phone, 
   MessageCircle,
   Heart,
-  Timer
+  Timer,
+  Trophy
 } from "lucide-react";
 import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
@@ -135,14 +136,21 @@ export default function Dashboard() {
               </DashboardBox>
             </Link>
 
-            {/* Box 2: Prayer Times (New) */}
+            {/* Box 3: Prayer Times (New) */}
             <Link href="/prayer-times">
               <DashboardBox icon={Timer} title="مواقيت الصلاة">
                 <p className="text-xs text-muted-foreground">مواقيت الصلاة لليوم</p>
               </DashboardBox>
             </Link>
 
-            {/* Box 3: Booklet */}
+            {/* Box 4: Competitions (New) */}
+            <Link href="/competitions">
+              <DashboardBox icon={Trophy} title="المسابقات 🏆">
+                <p className="text-xs text-muted-foreground">شارك واربح جوائز قيمة</p>
+              </DashboardBox>
+            </Link>
+
+            {/* Box 5: Booklet */}
             <DashboardBox 
               icon={BookOpen} 
               title="كتيب زين للعمرة" 

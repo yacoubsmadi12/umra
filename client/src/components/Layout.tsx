@@ -32,7 +32,6 @@ export function Layout({ children, isAdmin }: LayoutProps) {
       ]
     : [
         { href: "/dashboard", label: "الرئيسية", icon: Home },
-        { href: "/competitions", label: "المسابقات", icon: Trophy },
       ];
 
   return (
