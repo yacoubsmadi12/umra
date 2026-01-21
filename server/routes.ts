@@ -10,6 +10,7 @@ import { OpenAI } from "openai";
 import nodemailer from "nodemailer";
 import axios from "axios";
 import { extractPassportData } from "./lib/ocr";
+import { contactInfo } from "@shared/schema";
 
 const MemoryStore = createMemoryStore(session);
 

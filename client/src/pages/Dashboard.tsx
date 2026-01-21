@@ -65,6 +65,8 @@ function StatusCard({ status, comments }: { status: string, comments?: string | 
   );
 }
 
+import { TeamContactSection } from "@/components/TeamContactSection";
+
 export default function Dashboard() {
   const { data: request, isLoading } = useMyRequest();
   const { mutate: updateRequest, isPending: isUpdating } = useUpdateRequest();
@@ -127,6 +129,8 @@ export default function Dashboard() {
           {request.passportUrl && (
             <StatusCard status={request.status} comments={request.adminComments} />
           )}
+
+          <TeamContactSection />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Box 1: Prayers (New) */}

@@ -1,11 +1,11 @@
 import { db } from "./db";
 import {
-  users, umrahRequests, tripMaterials, emailSettings, pastUmrahParticipants, prayers,
+  users, umrahRequests, tripMaterials, emailSettings, pastUmrahParticipants, prayers, contactInfo,
   type User, type InsertUser,
   type UmrahRequest, type InsertUmrahRequest,
   type TripMaterial, type EmailSettings, type InsertEmailSettings,
   type PastParticipant, type InsertPastParticipant,
-  type Prayer
+  type Prayer, type ContactInfo, type InsertContactInfo
 } from "@shared/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 
@@ -35,9 +35,17 @@ export interface IStorage {
   getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined>;
   upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void>;
 
+  // Prayers
+  getPrayers(): Promise<Prayer[]>;
+  createPrayer(prayer: typeof prayers.$inferInsert): Promise<Prayer>;
+
   // Contact Info
   getContactInfo(): Promise<ContactInfo[]>;
   updateContactInfo(type: string, data: Partial<ContactInfo>): Promise<ContactInfo>;
+
+  // Email Settings
+  getEmailSettings(): Promise<EmailSettings | undefined>;
+  updateEmailSettings(settings: InsertEmailSettings): Promise<EmailSettings>;
 }
 
 export class DatabaseStorage implements IStorage {

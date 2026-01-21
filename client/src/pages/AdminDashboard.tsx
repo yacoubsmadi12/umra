@@ -21,6 +21,8 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 
 import * as XLSX from "xlsx";
 
+import { ContactManagement } from "@/components/ContactManagement";
+
 export default function AdminDashboard() {
   const { data: requests, isLoading } = useAllRequests();
   const { mutate: updateRequest } = useUpdateRequest();
@@ -454,7 +456,9 @@ export default function AdminDashboard() {
               <TabsContent value="approved"><RequestList filterStatus="approved" /></TabsContent>
               <TabsContent value="rejected"><RequestList filterStatus="rejected" /></TabsContent>
               <TabsContent value="past_accepted">
-                <Card className="p-8 border-primary/20 shadow-lg bg-white">
+                <div className="space-y-8">
+                  <ContactManagement />
+                  <Card className="p-8 border-primary/20 shadow-lg bg-white">
                   <div className="space-y-6">
                     <div className="flex items-center justify-between border-b pb-6">
                       <div className="flex items-center gap-4">

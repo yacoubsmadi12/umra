@@ -135,6 +135,27 @@ export const api = {
         200: z.custom<typeof emailSettings.$inferSelect>(),
       }
     }
+  },
+  contactInfo: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/contact-info',
+      responses: {
+        200: z.array(z.custom<typeof contactInfo.$inferSelect>()),
+      }
+    },
+    update: {
+      method: 'POST' as const,
+      path: '/api/contact-info',
+      input: z.object({
+        type: z.enum(['leader', 'admin', 'doctor']),
+        name: z.string(),
+        phone: z.string(),
+      }),
+      responses: {
+        200: z.custom<typeof contactInfo.$inferSelect>(),
+      }
+    }
   }
 };
 
