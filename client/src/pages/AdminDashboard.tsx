@@ -558,9 +558,10 @@ export default function AdminDashboard() {
                           <div className="py-20 text-center text-muted-foreground">لا توجد بيانات مسجلة حالياً</div>
                         )}
                       </div>
+                      </div>
                     </div>
-                  </div>
-                </Card>
+                  </Card>
+                </div>
               </TabsContent>
               <TabsContent value="registered">
                 <div className="grid gap-6">
