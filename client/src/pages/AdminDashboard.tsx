@@ -459,8 +459,8 @@ export default function AdminDashboard() {
                 <div className="space-y-8">
                   <ContactManagement />
                   <Card className="p-8 border-primary/20 shadow-lg bg-white">
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between border-b pb-6">
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between border-b pb-6">
                       <div className="flex items-center gap-4">
                         <div className="p-3 bg-primary/10 rounded-2xl">
                           <Users className="w-8 h-8 text-primary" />
