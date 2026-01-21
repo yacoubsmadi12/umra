@@ -18,6 +18,7 @@ import {
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api, type UmrahRequest, type User, type EmailSettings, type TripContact } from "@shared/routes";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { ObjectUploader } from "@/components/ObjectUploader";
 import { 
   Card, 
   CardContent, 
@@ -310,30 +311,32 @@ export default function Admin() {
                         <div className="flex gap-2 justify-end items-center">
                           {req.status === 'approved' && (
                             <div className="flex gap-1 border-l pl-2 ml-2">
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-8 w-8 p-0"
-                                title="رفع تأشيرة"
-                                onClick={() => {
-                                  const url = window.prompt("رابط التأشيرة:", req.visaUrl || "");
-                                  if (url !== null) updateDocs.mutate({ id: req.id, data: { visaUrl: url } });
-                                }}
+                              <ObjectUploader 
+                                asChild
+                                onComplete={(res) => updateDocs.mutate({ id: req.id, data: { visaUrl: res.url } })}
                               >
-                                <ShieldCheck className="w-4 h-4 text-primary" />
-                              </Button>
-                              <Button 
-                                size="sm" 
-                                variant="ghost" 
-                                className="h-8 w-8 p-0"
-                                title="رفع تذكرة"
-                                onClick={() => {
-                                  const url = window.prompt("رابط التذكرة:", req.ticketUrl || "");
-                                  if (url !== null) updateDocs.mutate({ id: req.id, data: { ticketUrl: url } });
-                                }}
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 p-0"
+                                  title="رفع تأشيرة"
+                                >
+                                  <ShieldCheck className="w-4 h-4 text-primary" />
+                                </Button>
+                              </ObjectUploader>
+                              <ObjectUploader 
+                                asChild
+                                onComplete={(res) => updateDocs.mutate({ id: req.id, data: { ticketUrl: res.url } })}
                               >
-                                <FileText className="w-4 h-4 text-primary" />
-                              </Button>
+                                <Button 
+                                  size="sm" 
+                                  variant="ghost" 
+                                  className="h-8 w-8 p-0"
+                                  title="رفع تذكرة"
+                                >
+                                  <FileText className="w-4 h-4 text-primary" />
+                                </Button>
+                              </ObjectUploader>
                               <Button 
                                 size="sm" 
                                 variant="ghost" 
