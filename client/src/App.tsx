@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Dashboard from "@/pages/Dashboard";
-import AdminDashboard from "@/pages/AdminDashboard";
+import Admin from "@/pages/Admin";
 import Booklet from "@/pages/Booklet";
 import Colleagues from "@/pages/Colleagues";
 import NotFound from "@/pages/not-found";
@@ -21,7 +21,7 @@ function Router() {
       <Route path="/" component={Login} />
       <Route path="/register" component={Register} />
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/admin" component={AdminDashboard} />
+      <Route path="/admin" component={Admin} />
       <Route path="/booklet" component={Booklet} />
       <Route path="/colleagues" component={Colleagues} />
       <Route path="/prayers" component={Prayers} />

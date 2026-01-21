@@ -303,6 +303,20 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // --- Trip Contacts Routes ---
+  app.get("/api/trip-contacts", requireAuth, async (_req, res) => {
+    const contacts = await storage.getTripContacts();
+    res.json(contacts);
+  });
+
+  app.post("/api/trip-contacts", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const { type, name, phone, whatsapp, order } = req.body;
+    const contact = await storage.updateTripContact(type, { name, phone, whatsapp, order });
+    res.json(contact);
+  });
+
   // --- Seed Data ---
   await seedDatabase();
 

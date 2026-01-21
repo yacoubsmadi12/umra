@@ -29,11 +29,55 @@ import {
   MessageCircle,
   Heart,
   Timer,
-  Trophy
+  Trophy,
+  Contact2
 } from "lucide-react";
 import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
+
+function ContactCard({ type, name, phone, whatsapp }: { type: string, name: string, phone: string, whatsapp: string }) {
+  const titles: Record<string, string> = {
+    leader: "أمير الرحلة",
+    admin: "الإداري",
+    doctor: "طبيب الرحلة"
+  };
+
+  return (
+    <Card className="p-4 border-primary/10 shadow-sm hover:shadow-md transition-all">
+      <div className="flex flex-col items-center text-center space-y-3">
+        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+          <Contact2 className="w-6 h-6" />
+        </div>
+        <div>
+          <h4 className="font-bold text-primary">{titles[type] || type}</h4>
+          <p className="font-medium text-foreground">{name}</p>
+          <p className="text-xs text-muted-foreground" dir="ltr">{phone}</p>
+        </div>
+        <div className="flex gap-2 w-full pt-2">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex-1 text-xs gap-1 border-primary/20 hover:bg-primary/5"
+            onClick={() => window.open(`https://wa.me/${whatsapp.replace(/\D/g, '')}`, '_blank')}
+          >
+            <MessageCircle className="w-3 h-3" />
+            واتساب
+          </Button>
+          <Button 
+            variant="default" 
+            size="sm" 
+            className="flex-1 text-xs gap-1"
+            onClick={() => window.open(`tel:${phone}`, '_self')}
+          >
+            <Phone className="w-3 h-3" />
+            اتصال
+          </Button>
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 function StatusCard({ status, comments }: { status: string, comments?: string | null }) {
   const config = {
@@ -69,6 +113,7 @@ export default function Dashboard() {
   const { data: request, isLoading } = useMyRequest();
   const { mutate: updateRequest, isPending: isUpdating } = useUpdateRequest();
   const { data: materials } = useQuery({ queryKey: [api.materials.list.path] });
+  const { data: contacts } = useQuery<any[]>({ queryKey: ["/api/trip-contacts"] });
   const { data: colleagues } = useQuery({ 
     queryKey: [api.colleagues.list.path],
     enabled: !!request?.assignedColleagueIds?.length 
@@ -149,6 +194,47 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">شارك واربح جوائز قيمة</p>
               </DashboardBox>
             </Link>
+
+            {/* Box: Trip Contacts (New) */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <DashboardBox icon={Contact2} title="معلومات فريق زين">
+                  <p className="text-xs text-muted-foreground">تواصل مع فريق إدارة الرحلة</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-primary/20 shadow-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-right text-2xl font-bold text-primary font-tajawal">فريق إدارة الرحلة</DialogTitle>
+                  <DialogDescription className="text-right">فريق زين دائماً بجانبك لضمان رحلة مريحة وآمنة.</DialogDescription>
+                </DialogHeader>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
+                  {['leader', 'admin', 'doctor'].map(type => {
+                    const contact = contacts?.find(c => c.type === type);
+                    if (!contact) return null;
+                    return (
+                      <motion.div
+                        key={type}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <ContactCard 
+                          type={type} 
+                          name={contact.name} 
+                          phone={contact.phone} 
+                          whatsapp={contact.whatsapp} 
+                        />
+                      </motion.div>
+                    );
+                  })}
+                  {(!contacts || contacts.filter(c => ['leader', 'admin', 'doctor'].includes(c.type)).length === 0) && (
+                    <div className="col-span-full py-10 text-center text-muted-foreground">
+                      سيتم إضافة معلومات الفريق قريباً
+                    </div>
+                  )}
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Box 5: Booklet */}
             <DashboardBox 

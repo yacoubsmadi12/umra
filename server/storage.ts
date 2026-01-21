@@ -1,11 +1,11 @@
 import { db } from "./db";
 import {
-  users, umrahRequests, tripMaterials, emailSettings, pastUmrahParticipants, prayers,
+  users, umrahRequests, tripMaterials, emailSettings, pastUmrahParticipants, prayers, tripContacts,
   type User, type InsertUser,
   type UmrahRequest, type InsertUmrahRequest,
   type TripMaterial, type EmailSettings, type InsertEmailSettings,
   type PastParticipant, type InsertPastParticipant,
-  type Prayer
+  type Prayer, type TripContact, type InsertTripContact
 } from "@shared/schema";
 import { eq, desc, inArray } from "drizzle-orm";
 
@@ -38,38 +38,17 @@ export interface IStorage {
   // Prayers
   getPrayers(): Promise<Prayer[]>;
   createPrayer(prayer: typeof prayers.$inferInsert): Promise<Prayer>;
+
+  // Email Settings
+  getEmailSettings(): Promise<EmailSettings | undefined>;
+  updateEmailSettings(settings: InsertEmailSettings): Promise<EmailSettings>;
+
+  // Trip Contacts
+  getTripContacts(): Promise<TripContact[]>;
+  updateTripContact(type: string, contact: InsertTripContact): Promise<TripContact>;
 }
 
 export class DatabaseStorage implements IStorage {
-  async getPrayers(): Promise<Prayer[]> {
-    return await db.select().from(prayers).orderBy(prayers.order);
-  }
-
-  async createPrayer(prayer: typeof prayers.$inferInsert): Promise<Prayer> {
-    const [newPrayer] = await db.insert(prayers).values(prayer).returning();
-    return newPrayer;
-  }
-
-  async getPastParticipants(): Promise<PastParticipant[]> {
-    return await db.select().from(pastUmrahParticipants);
-  }
-
-  async getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined> {
-    const [p] = await db.select().from(pastUmrahParticipants).where(eq(pastUmrahParticipants.employeeId, employeeId));
-    return p;
-  }
-
-  async upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void> {
-    for (const p of participants) {
-      const existing = await this.getPastParticipantByEmployeeId(p.employeeId);
-      if (existing) {
-        await db.update(pastUmrahParticipants).set(p).where(eq(pastUmrahParticipants.id, existing.id));
-      } else {
-        await db.insert(pastUmrahParticipants).values(p);
-      }
-    }
-  }
-
   async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -91,7 +70,6 @@ export class DatabaseStorage implements IStorage {
 
   async getUsersByIds(ids: number[]): Promise<User[]> {
     if (!ids || !ids.length) return [];
-    // Filter out potential non-numeric values and ensure we have an array of integers
     const validIds = ids.map(id => Number(id)).filter(id => !isNaN(id));
     if (!validIds.length) return [];
     return await db.select().from(users).where(inArray(users.id, validIds));
@@ -172,6 +150,35 @@ export class DatabaseStorage implements IStorage {
     return results.map(r => r.user);
   }
 
+  async getPastParticipants(): Promise<PastParticipant[]> {
+    return await db.select().from(pastUmrahParticipants);
+  }
+
+  async getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined> {
+    const [p] = await db.select().from(pastUmrahParticipants).where(eq(pastUmrahParticipants.employeeId, employeeId));
+    return p;
+  }
+
+  async upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void> {
+    for (const p of participants) {
+      const existing = await this.getPastParticipantByEmployeeId(p.employeeId);
+      if (existing) {
+        await db.update(pastUmrahParticipants).set(p).where(eq(pastUmrahParticipants.id, existing.id));
+      } else {
+        await db.insert(pastUmrahParticipants).values(p);
+      }
+    }
+  }
+
+  async getPrayers(): Promise<Prayer[]> {
+    return await db.select().from(prayers).orderBy(prayers.order);
+  }
+
+  async createPrayer(prayer: typeof prayers.$inferInsert): Promise<Prayer> {
+    const [newPrayer] = await db.insert(prayers).values(prayer).returning();
+    return newPrayer;
+  }
+
   async getEmailSettings(): Promise<EmailSettings | undefined> {
     const [settings] = await db.select().from(emailSettings);
     return settings;
@@ -187,6 +194,24 @@ export class DatabaseStorage implements IStorage {
       return updated;
     } else {
       const [inserted] = await db.insert(emailSettings).values(settings).returning();
+      return inserted;
+    }
+  }
+
+  async getTripContacts(): Promise<TripContact[]> {
+    return await db.select().from(tripContacts).orderBy(tripContacts.order);
+  }
+
+  async updateTripContact(type: string, contact: InsertTripContact): Promise<TripContact> {
+    const existing = await db.select().from(tripContacts).where(eq(tripContacts.type, type));
+    if (existing.length > 0) {
+      const [updated] = await db.update(tripContacts)
+        .set({ ...contact, updatedAt: new Date() })
+        .where(eq(tripContacts.type, type))
+        .returning();
+      return updated;
+    } else {
+      const [inserted] = await db.insert(tripContacts).values({ ...contact, type }).returning();
       return inserted;
     }
   }
