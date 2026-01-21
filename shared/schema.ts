@@ -87,6 +87,18 @@ export const prayers = pgTable("prayers", {
   order: integer("order").default(0),
 });
 
+// Contact info for Zain team
+export const contactInfo = pgTable("contact_info", {
+  id: serial("id").primaryKey(),
+  type: text("type").notNull(), // 'leader', 'admin', 'doctor'
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const insertContactInfoSchema = createInsertSchema(contactInfo).omit({ id: true, updatedAt: true });
+export type ContactInfo = typeof contactInfo.$inferSelect;
+
 export const insertPrayerSchema = createInsertSchema(prayers).omit({ id: true });
 export type Prayer = typeof prayers.$inferSelect;
 

@@ -303,6 +303,20 @@ export async function registerRoutes(
     res.json(updated);
   });
 
+  // --- Contact Info Routes ---
+  app.get("/api/contact-info", async (_req, res) => {
+    const info = await storage.getContactInfo();
+    res.json(info);
+  });
+
+  app.post("/api/contact-info", requireAuth, async (req, res) => {
+    const user = await storage.getUser(req.session.userId!);
+    if (user?.role !== 'admin') return res.status(403).json({ message: "Forbidden" });
+    const { type, name, phone } = req.body;
+    const updated = await storage.updateContactInfo(type, { name, phone });
+    res.json(updated);
+  });
+
   // --- Seed Data ---
   await seedDatabase();
 

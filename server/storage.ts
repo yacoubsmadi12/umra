@@ -35,12 +35,31 @@ export interface IStorage {
   getPastParticipantByEmployeeId(employeeId: string): Promise<PastParticipant | undefined>;
   upsertPastParticipants(participants: InsertPastParticipant[]): Promise<void>;
 
-  // Prayers
-  getPrayers(): Promise<Prayer[]>;
-  createPrayer(prayer: typeof prayers.$inferInsert): Promise<Prayer>;
+  // Contact Info
+  getContactInfo(): Promise<ContactInfo[]>;
+  updateContactInfo(type: string, data: Partial<ContactInfo>): Promise<ContactInfo>;
 }
 
 export class DatabaseStorage implements IStorage {
+  async getContactInfo(): Promise<ContactInfo[]> {
+    return await db.select().from(contactInfo);
+  }
+
+  async updateContactInfo(type: string, data: Partial<ContactInfo>): Promise<ContactInfo> {
+    const existing = await db.select().from(contactInfo).where(eq(contactInfo.type, type));
+    if (existing.length > 0) {
+      const [updated] = await db.update(contactInfo)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(contactInfo.type, type))
+        .returning();
+      return updated;
+    } else {
+      const [inserted] = await db.insert(contactInfo)
+        .values({ type, name: data.name!, phone: data.phone! })
+        .returning();
+      return inserted;
+    }
+  }
   async getPrayers(): Promise<Prayer[]> {
     return await db.select().from(prayers).orderBy(prayers.order);
   }
