@@ -94,8 +94,15 @@ export async function extractPassportData(url: string): Promise<string> {
           // Format date of birth: YYMMDD to YYYY-MM-DD
           let dob = f.birthDate || 'غير متوفر';
           if (dob !== 'غير متوفر' && dob.length === 6) {
-            const yearPrefix = parseInt(dob.substring(0, 2)) > 25 ? '19' : '20';
+            const yearPrefix = parseInt(dob.substring(0, 2)) > 30 ? '19' : '20';
             dob = `${yearPrefix}${dob.substring(0, 2)}-${dob.substring(2, 4)}-${dob.substring(4, 6)}`;
+          }
+
+          // Format expiration date: YYMMDD to YYYY-MM-DD
+          let expiry = f.expirationDate || 'غير متوفر';
+          if (expiry !== 'غير متوفر' && expiry.length === 6) {
+            const yearPrefix = '20';
+            expiry = `${yearPrefix}${expiry.substring(0, 2)}-${expiry.substring(2, 4)}-${expiry.substring(4, 6)}`;
           }
 
           return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
@@ -103,7 +110,7 @@ export async function extractPassportData(url: string): Promise<string> {
                  `تاريخ الميلاد: ${dob}\n` +
                  `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
                  `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
-                 `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
+                 `تاريخ الانتهاء: ${expiry}`;
         }
       } catch (e) {
         console.error("MRZ Parsing Error:", e);
