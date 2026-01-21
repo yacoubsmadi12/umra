@@ -173,6 +173,81 @@ export default function Dashboard() {
             <StatusCard status={request.status} comments={request.adminComments} />
           )}
 
+          {/* Approved View (When request is accepted) */}
+          {request.status === 'approved' && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="space-y-6 mb-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <DashboardBox 
+                  icon={ShieldCheck} 
+                  title="التأشيرة الإلكترونية" 
+                  onClick={() => request.visaUrl && window.open(request.visaUrl, "_blank")}
+                  disabled={!request.visaUrl}
+                >
+                  <p className="text-xs text-muted-foreground">{request.visaUrl ? "جاهزة للتحميل" : "قيد الإصدار"}</p>
+                </DashboardBox>
+                
+                <DashboardBox 
+                  icon={FileText} 
+                  title="تذكرة الطيران" 
+                  onClick={() => request.ticketUrl && window.open(request.ticketUrl, "_blank")}
+                  disabled={!request.ticketUrl}
+                >
+                  <p className="text-xs text-muted-foreground">{request.ticketUrl ? "جاهزة للتحميل" : "قيد الإصدار"}</p>
+                </DashboardBox>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <DashboardBox icon={Contact2} title="معلومات فريق زين">
+                      <p className="text-xs text-muted-foreground">تواصل مع فريق إدارة الرحلة</p>
+                    </DashboardBox>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-primary/20 shadow-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-right text-2xl font-bold text-primary font-tajawal">فريق إدارة الرحلة</DialogTitle>
+                      <DialogDescription className="text-right">فريق زين دائماً بجانبك لضمان رحلة مريحة وآمنة.</DialogDescription>
+                    </DialogHeader>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
+                      {['leader', 'admin', 'doctor'].map(type => {
+                        const contact = contacts?.find(c => c.type === type);
+                        if (!contact) return null;
+                        return (
+                          <motion.div
+                            key={type}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <ContactCard 
+                              type={type} 
+                              name={contact.name} 
+                              phone={contact.phone} 
+                              whatsapp={contact.whatsapp} 
+                            />
+                          </motion.div>
+                        );
+                      })}
+                      {(!contacts || contacts.filter(c => ['leader', 'admin', 'doctor'].includes(c.type)).length === 0) && (
+                        <div className="col-span-full py-10 text-center text-muted-foreground">
+                          سيتم إضافة معلومات الفريق قريباً
+                        </div>
+                      )}
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
+                <Link href="/colleagues">
+                  <DashboardBox icon={Users} title="زملاء الرحلة">
+                    <p className="text-xs text-muted-foreground">تعرف على زملائك في الرحلة</p>
+                  </DashboardBox>
+                </Link>
+              </div>
+            </motion.div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Box 1: Prayers (New) */}
             <Link href="/prayers">
@@ -194,49 +269,6 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">شارك واربح جوائز قيمة</p>
               </DashboardBox>
             </Link>
-
-            {/* Box: Trip Contacts (New) - Only visible if approved */}
-            {request.status === 'approved' && (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <DashboardBox icon={Contact2} title="معلومات فريق زين">
-                    <p className="text-xs text-muted-foreground">تواصل مع فريق إدارة الرحلة</p>
-                  </DashboardBox>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-primary/20 shadow-2xl">
-                  <DialogHeader>
-                    <DialogTitle className="text-right text-2xl font-bold text-primary font-tajawal">فريق إدارة الرحلة</DialogTitle>
-                    <DialogDescription className="text-right">فريق زين دائماً بجانبك لضمان رحلة مريحة وآمنة.</DialogDescription>
-                  </DialogHeader>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
-                    {['leader', 'admin', 'doctor'].map(type => {
-                      const contact = contacts?.find(c => c.type === type);
-                      if (!contact) return null;
-                      return (
-                        <motion.div
-                          key={type}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <ContactCard 
-                            type={type} 
-                            name={contact.name} 
-                            phone={contact.phone} 
-                            whatsapp={contact.whatsapp} 
-                          />
-                        </motion.div>
-                      );
-                    })}
-                    {(!contacts || contacts.filter(c => ['leader', 'admin', 'doctor'].includes(c.type)).length === 0) && (
-                      <div className="col-span-full py-10 text-center text-muted-foreground">
-                        سيتم إضافة معلومات الفريق قريباً
-                      </div>
-                    )}
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
 
             {/* Box 5: Booklet */}
             <DashboardBox 
