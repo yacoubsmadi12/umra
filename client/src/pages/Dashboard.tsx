@@ -173,7 +173,7 @@ export default function Dashboard() {
             <StatusCard status={request.status} comments={request.adminComments} />
           )}
 
-          {/* Approved View (When request is accepted) */}
+          {/* Approved View (When request is accepted) - Moving Contacts here */}
           {request.status === 'approved' && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
@@ -538,102 +538,7 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  <Button className="w-full" onClick={() => setShowDocs(false)}>إغلاق</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            <Dialog>
-              <DialogTrigger asChild>
-                <DashboardBox icon={ShieldCheck} title="القواعد والسياسات" disabled={false}>
-                  <p className="text-xs text-muted-foreground">يرجى الاطلاع والالتزام بالقواعد</p>
-                </DashboardBox>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>القواعد والسياسات</DialogTitle>
-                  <DialogDescription>
-                    الشروط والتعليمات المنظمة لبرنامج العمرة لموظفي زين.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto font-tajawal">
-                  <section className="space-y-3">
-                    <h3 className="font-bold text-lg text-primary border-b pb-2">سياسات التسجيل والقبول</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
-                      <li>يجب أن يكون الموظف قد أمضى سنة على الأقل في الخدمة الفعلية.</li>
-                      <li>الأولوية للموظفين الذين لم يسبق لهم أداء العمرة من خلال برامج الشركة السابقة.</li>
-                      <li>التسجيل عبر المنصة الإلكترونية هو الوسيلة الوحيدة المعتمدة للتقديم.</li>
-                      <li>يحتفظ قسم الموارد البشرية بالحق في قبول أو رفض الطلبات بناءً على الميزانية المتاحة ومعايير المفاضلة.</li>
-                    </ul>
-                  </section>
-
-                  <section className="space-y-3">
-                    <h3 className="font-bold text-lg text-primary border-b pb-2">الوثائق المطلوبة</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
-                      <li>جواز سفر ساري المفعول لمدة لا تقل عن 6 أشهر من تاريخ السفر.</li>
-                      <li>صورة واضحة عن دفتر خدمة العلم (للموظفين الذكور المطلوب منهم ذلك).</li>
-                      <li>وثائق إثبات صلة القرابة للمرافقين (في حال طلب مرافقين).</li>
-                    </ul>
-                  </section>
-
-                  <section className="space-y-3">
-                    <h3 className="font-bold text-lg text-primary border-b pb-2">الالتزامات المالية</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
-                      <li>تلتزم الشركة بتغطية تكاليف البرنامج الأساسية (السكن والمواصلات) وفقاً للسياسة المعتمدة.</li>
-                      <li>أي تكاليف إضافية خارج البرنامج الأساسي يتحملها الموظف بالكامل.</li>
-                      <li>في حال الرغبة في التقسيط، يتم تقديم طلب رسمي للاقتطاع من الراتب وفق النماذج المتوفرة.</li>
-                    </ul>
-                  </section>
-
-                  <section className="space-y-3">
-                    <h3 className="font-bold text-lg text-primary border-b pb-2">قواعد السلوك العام</h3>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
-                      <li>الموظف يمثل شركة زين أثناء الرحلة، ويجب الالتزام بحسن السير والسلوك.</li>
-                      <li>الالتزام بمواعيد التجمع والانطلاق المقررة من قبل المشرفين على الرحلة.</li>
-                      <li>التعاون التام مع زملاء الرحلة والعمل بروح الفريق الواحد.</li>
-                    </ul>
-                  </section>
-                </div>
-              </DialogContent>
-            </Dialog>
-
-            {/* Box 5: Tickets & Visas */}
-            <DashboardBox icon={FileText} title="تذاكر والتأشيرات" disabled={!request.visaUrl && !request.ticketUrl}>
-              <div className="flex gap-2 justify-center w-full">
-                {request.visaUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.visaUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تأشيرة</Button>}
-                {request.ticketUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.ticketUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تذكرة</Button>}
-              </div>
-              {(!request.visaUrl && !request.ticketUrl) && <p className="text-[10px] text-muted-foreground mt-2">ستظهر هنا عند توفرها</p>}
-            </DashboardBox>
-
-            {/* Box 6: Trip Colleagues */}
-            <Dialog>
-              <DialogTrigger asChild>
-                <DashboardBox icon={Users} title="زملاء الرحلة" disabled={!request.assignedColleagueIds?.length}>
-                  <p className="text-xs text-muted-foreground">{request.assignedColleagueIds?.length || 0} زملاء متاحين</p>
-                </DashboardBox>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-xl">
-                <DialogHeader>
-                  <DialogTitle>زملاء الرحلة</DialogTitle>
-                </DialogHeader>
-                <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
-                  {Array.isArray(colleagues) && colleagues.length ? colleagues.map((c: any, i: number) => (
-                    <div key={i} className="flex items-center justify-between p-4 bg-muted/10 rounded-xl border">
-                      <div>
-                        <div className="font-bold">{c.fullName}</div>
-                        <div className="text-xs text-muted-foreground">{c.department}</div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button size="icon" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => window.open(`https://wa.me/${c.phone?.replace(/[^0-9]/g, '')}`, '_blank')}>
-                          <MessageCircle className="w-5 h-5" />
-                        </Button>
-                        <Button size="icon" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => window.location.href = `tel:${c.phone}`}>
-                          <Phone className="w-5 h-5" />
-                        </Button>
-                      </div>
-                    </div>
-                  )) : <p className="text-center italic">سيقوم الأدمن بإضافة الزملاء قريباً</p>}
+                  <Button className="w-full h-12 text-lg font-bold" onClick={() => setShowDocs(false)}>حفظ وإغلاق</Button>
                 </div>
               </DialogContent>
             </Dialog>
