@@ -29,55 +29,11 @@ import {
   MessageCircle,
   Heart,
   Timer,
-  Trophy,
-  Contact2
+  Trophy
 } from "lucide-react";
 import { Redirect, Link } from "wouter";
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState } from "react";
-
-function ContactCard({ type, name, phone, whatsapp }: { type: string, name: string, phone: string, whatsapp: string }) {
-  const titles: Record<string, string> = {
-    leader: "أمير الرحلة",
-    admin: "الإداري",
-    doctor: "طبيب الرحلة"
-  };
-
-  return (
-    <Card className="p-4 border-primary/10 shadow-sm hover:shadow-md transition-all">
-      <div className="flex flex-col items-center text-center space-y-3">
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-          <Contact2 className="w-6 h-6" />
-        </div>
-        <div>
-          <h4 className="font-bold text-primary">{titles[type] || type}</h4>
-          <p className="font-medium text-foreground">{name}</p>
-          <p className="text-xs text-muted-foreground" dir="ltr">{phone}</p>
-        </div>
-        <div className="flex gap-2 w-full pt-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1 text-xs gap-1 border-primary/20 hover:bg-primary/5"
-            onClick={() => window.open(`https://wa.me/${whatsapp.replace(/\D/g, '')}`, '_blank')}
-          >
-            <MessageCircle className="w-3 h-3" />
-            واتساب
-          </Button>
-          <Button 
-            variant="default" 
-            size="sm" 
-            className="flex-1 text-xs gap-1"
-            onClick={() => window.open(`tel:${phone}`, '_self')}
-          >
-            <Phone className="w-3 h-3" />
-            اتصال
-          </Button>
-        </div>
-      </div>
-    </Card>
-  );
-}
 
 function StatusCard({ status, comments }: { status: string, comments?: string | null }) {
   const config = {
@@ -113,7 +69,6 @@ export default function Dashboard() {
   const { data: request, isLoading } = useMyRequest();
   const { mutate: updateRequest, isPending: isUpdating } = useUpdateRequest();
   const { data: materials } = useQuery({ queryKey: [api.materials.list.path] });
-  const { data: contacts } = useQuery<any[]>({ queryKey: ["/api/trip-contacts"] });
   const { data: colleagues } = useQuery({ 
     queryKey: [api.colleagues.list.path],
     enabled: !!request?.assignedColleagueIds?.length 
@@ -173,129 +128,6 @@ export default function Dashboard() {
             <StatusCard status={request.status} comments={request.adminComments} />
           )}
 
-          {/* Approved View (When request is accepted) */}
-          {request.status === 'approved' && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6 mb-8"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <DashboardBox 
-                  icon={ShieldCheck} 
-                  title="التأشيرة الإلكترونية" 
-                  onClick={() => request.visaUrl && window.open(request.visaUrl, "_blank")}
-                  disabled={!request.visaUrl}
-                >
-                  <p className="text-xs text-muted-foreground">{request.visaUrl ? "جاهزة للتحميل" : "قيد الإصدار"}</p>
-                </DashboardBox>
-                
-                <DashboardBox 
-                  icon={FileText} 
-                  title="تذكرة الطيران" 
-                  onClick={() => request.ticketUrl && window.open(request.ticketUrl, "_blank")}
-                  disabled={!request.ticketUrl}
-                >
-                  <p className="text-xs text-muted-foreground">{request.ticketUrl ? "جاهزة للتحميل" : "قيد الإصدار"}</p>
-                </DashboardBox>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <DashboardBox icon={Contact2} title="معلومات فريق زين">
-                      <p className="text-xs text-muted-foreground">تواصل مع فريق إدارة الرحلة</p>
-                    </DashboardBox>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-2xl bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-primary/20 shadow-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-right text-2xl font-bold text-primary font-tajawal">فريق إدارة الرحلة</DialogTitle>
-                      <DialogDescription className="text-right">فريق زين دائماً بجانبك لضمان رحلة مريحة وآمنة.</DialogDescription>
-                    </DialogHeader>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 py-6">
-                      {['leader', 'admin', 'doctor'].map(type => {
-                        const contact = contacts?.find(c => c.type === type);
-                        if (!contact) return null;
-                        return (
-                          <motion.div
-                            key={type}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.3 }}
-                          >
-                            <ContactCard 
-                              type={type} 
-                              name={contact.name} 
-                              phone={contact.phone} 
-                              whatsapp={contact.whatsapp} 
-                            />
-                          </motion.div>
-                        );
-                      })}
-                      {(!contacts || contacts.filter(c => ['leader', 'admin', 'doctor'].includes(c.type)).length === 0) && (
-                        <div className="col-span-full py-10 text-center text-muted-foreground">
-                          سيتم إضافة معلومات الفريق قريباً
-                        </div>
-                      )}
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <DashboardBox 
-                  icon={BookOpen} 
-                  title="كتيب زين للعمرة" 
-                  onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
-                >
-                  <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
-                </DashboardBox>
-
-                <Dialog open={showPayment} onOpenChange={setShowPayment}>
-                  <DialogTrigger asChild>
-                    <DashboardBox icon={CreditCard} title="طريقة الدفع">
-                      <p className="text-xs text-muted-foreground">
-                        {request.paymentMethod ? "تم تحديد: " + (
-                          request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
-                          request.paymentMethod === 'entertainment_allowance' ? 'خصم من بدل الترفيه' :
-                          request.paymentMethod === 'cash' ? 'كاش' :
-                          request.paymentMethod === 'cliQ' ? 'تحويل كليك' : request.paymentMethod
-                        ) : "اختر الطريقة المناسبة"}
-                      </p>
-                    </DashboardBox>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
-                    <DialogHeader>
-                      <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
-                      <DialogDescription className="text-center">
-                        اختر الطريقة التي تفضلها لتسديد تكاليف رحلة العمرة.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-6 py-6">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium pr-1">خيار الدفع</Label>
-                        <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
-                          <SelectTrigger className="w-full h-12 bg-muted/50 border-primary/20 hover:border-primary/40 transition-colors">
-                            <SelectValue placeholder="اختر الطريقة" />
-                          </SelectTrigger>
-                          <SelectContent className="bg-white dark:bg-slate-900 border-primary/10 shadow-xl">
-                            <SelectItem value="salary_deduction" className="h-10 cursor-pointer focus:bg-primary/5">خصم من الراتب</SelectItem>
-                            <SelectItem value="entertainment_allowance" className="h-10 cursor-pointer focus:bg-primary/5">خصم من بدل الترفيه</SelectItem>
-                            <SelectItem value="cash" className="h-10 cursor-pointer focus:bg-primary/5">كاش</SelectItem>
-                            <SelectItem value="cliQ" className="h-10 cursor-pointer focus:bg-primary/5">تحويل كليك</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <Button className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/20" onClick={() => setShowPayment(false)}>حفظ وإغلاق</Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-
-                <Link href="/colleagues">
-                  <DashboardBox icon={Users} title="زملاء الرحلة">
-                    <p className="text-xs text-muted-foreground">تعرف على زملائك في الرحلة</p>
-                  </DashboardBox>
-                </Link>
-              </div>
-            </motion.div>
-          )}
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Box 1: Prayers (New) */}
             <Link href="/prayers">
@@ -317,6 +149,57 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">شارك واربح جوائز قيمة</p>
               </DashboardBox>
             </Link>
+
+            {/* Box 5: Booklet */}
+            <DashboardBox 
+              icon={BookOpen} 
+              title="كتيب زين للعمرة" 
+              onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
+              disabled={request.status !== 'approved'}
+            >
+              <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
+            </DashboardBox>
+
+            {/* Box 2: Payment Method */}
+            <Dialog open={showPayment} onOpenChange={setShowPayment}>
+              <DialogTrigger asChild>
+                <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={request.status !== 'approved'}>
+                  <p className="text-xs text-muted-foreground">
+                    {request.paymentMethod ? "تم تحديد: " + (
+                      request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
+                      request.paymentMethod === 'entertainment_allowance' ? 'خصم من بدل الترفيه' :
+                      request.paymentMethod === 'cash' ? 'كاش' :
+                      request.paymentMethod === 'cliQ' ? 'تحويل كليك' : request.paymentMethod
+                    ) : "اختر الطريقة المناسبة"}
+                  </p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
+                <DialogHeader>
+                  <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
+                  <DialogDescription className="text-center">
+                    اختر الطريقة التي تفضلها لتسديد تكاليف رحلة العمرة.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-6 py-6">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium pr-1">خيار الدفع</Label>
+                    <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
+                      <SelectTrigger className="w-full h-12 bg-muted/50 border-primary/20 hover:border-primary/40 transition-colors">
+                        <SelectValue placeholder="اختر الطريقة" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white dark:bg-slate-900 border-primary/10 shadow-xl">
+                        <SelectItem value="salary_deduction" className="h-10 cursor-pointer focus:bg-primary/5">خصم من الراتب</SelectItem>
+                        <SelectItem value="entertainment_allowance" className="h-10 cursor-pointer focus:bg-primary/5">خصم من بدل الترفيه</SelectItem>
+                        <SelectItem value="cash" className="h-10 cursor-pointer focus:bg-primary/5">كاش</SelectItem>
+                        <SelectItem value="cliQ" className="h-10 cursor-pointer focus:bg-primary/5">تحويل كليك</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/20" onClick={() => setShowPayment(false)}>حفظ وإغلاق</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
 
             {/* Box 3: Required Documents */}
             <Dialog open={showDocs} onOpenChange={setShowDocs}>
@@ -535,7 +418,102 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  <Button className="w-full h-12 text-lg font-bold" onClick={() => setShowDocs(false)}>حفظ وإغلاق</Button>
+                  <Button className="w-full" onClick={() => setShowDocs(false)}>إغلاق</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            <Dialog>
+              <DialogTrigger asChild>
+                <DashboardBox icon={ShieldCheck} title="القواعد والسياسات" disabled={false}>
+                  <p className="text-xs text-muted-foreground">يرجى الاطلاع والالتزام بالقواعد</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>القواعد والسياسات</DialogTitle>
+                  <DialogDescription>
+                    الشروط والتعليمات المنظمة لبرنامج العمرة لموظفي زين.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="py-4 space-y-6 max-h-[60vh] overflow-y-auto font-tajawal">
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">سياسات التسجيل والقبول</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>يجب أن يكون الموظف قد أمضى سنة على الأقل في الخدمة الفعلية.</li>
+                      <li>الأولوية للموظفين الذين لم يسبق لهم أداء العمرة من خلال برامج الشركة السابقة.</li>
+                      <li>التسجيل عبر المنصة الإلكترونية هو الوسيلة الوحيدة المعتمدة للتقديم.</li>
+                      <li>يحتفظ قسم الموارد البشرية بالحق في قبول أو رفض الطلبات بناءً على الميزانية المتاحة ومعايير المفاضلة.</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">الوثائق المطلوبة</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>جواز سفر ساري المفعول لمدة لا تقل عن 6 أشهر من تاريخ السفر.</li>
+                      <li>صورة واضحة عن دفتر خدمة العلم (للموظفين الذكور المطلوب منهم ذلك).</li>
+                      <li>وثائق إثبات صلة القرابة للمرافقين (في حال طلب مرافقين).</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">الالتزامات المالية</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>تلتزم الشركة بتغطية تكاليف البرنامج الأساسية (السكن والمواصلات) وفقاً للسياسة المعتمدة.</li>
+                      <li>أي تكاليف إضافية خارج البرنامج الأساسي يتحملها الموظف بالكامل.</li>
+                      <li>في حال الرغبة في التقسيط، يتم تقديم طلب رسمي للاقتطاع من الراتب وفق النماذج المتوفرة.</li>
+                    </ul>
+                  </section>
+
+                  <section className="space-y-3">
+                    <h3 className="font-bold text-lg text-primary border-b pb-2">قواعد السلوك العام</h3>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-muted-foreground leading-relaxed">
+                      <li>الموظف يمثل شركة زين أثناء الرحلة، ويجب الالتزام بحسن السير والسلوك.</li>
+                      <li>الالتزام بمواعيد التجمع والانطلاق المقررة من قبل المشرفين على الرحلة.</li>
+                      <li>التعاون التام مع زملاء الرحلة والعمل بروح الفريق الواحد.</li>
+                    </ul>
+                  </section>
+                </div>
+              </DialogContent>
+            </Dialog>
+
+            {/* Box 5: Tickets & Visas */}
+            <DashboardBox icon={FileText} title="تذاكر والتأشيرات" disabled={!request.visaUrl && !request.ticketUrl}>
+              <div className="flex gap-2 justify-center w-full">
+                {request.visaUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.visaUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تأشيرة</Button>}
+                {request.ticketUrl && <Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); window.open(request.ticketUrl!, '_blank'); }}><Download className="w-3 h-3 ml-1"/> تذكرة</Button>}
+              </div>
+              {(!request.visaUrl && !request.ticketUrl) && <p className="text-[10px] text-muted-foreground mt-2">ستظهر هنا عند توفرها</p>}
+            </DashboardBox>
+
+            {/* Box 6: Trip Colleagues */}
+            <Dialog>
+              <DialogTrigger asChild>
+                <DashboardBox icon={Users} title="زملاء الرحلة" disabled={!request.assignedColleagueIds?.length}>
+                  <p className="text-xs text-muted-foreground">{request.assignedColleagueIds?.length || 0} زملاء متاحين</p>
+                </DashboardBox>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-xl">
+                <DialogHeader>
+                  <DialogTitle>زملاء الرحلة</DialogTitle>
+                </DialogHeader>
+                <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                  {Array.isArray(colleagues) && colleagues.length ? colleagues.map((c: any, i: number) => (
+                    <div key={i} className="flex items-center justify-between p-4 bg-muted/10 rounded-xl border">
+                      <div>
+                        <div className="font-bold">{c.fullName}</div>
+                        <div className="text-xs text-muted-foreground">{c.department}</div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button size="icon" variant="ghost" className="text-green-600 hover:bg-green-50" onClick={() => window.open(`https://wa.me/${c.phone?.replace(/[^0-9]/g, '')}`, '_blank')}>
+                          <MessageCircle className="w-5 h-5" />
+                        </Button>
+                        <Button size="icon" variant="ghost" className="text-blue-600 hover:bg-blue-50" onClick={() => window.location.href = `tel:${c.phone}`}>
+                          <Phone className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    </div>
+                  )) : <p className="text-center italic">سيقوم الأدمن بإضافة الزملاء قريباً</p>}
                 </div>
               </DialogContent>
             </Dialog>

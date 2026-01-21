@@ -87,23 +87,8 @@ export const prayers = pgTable("prayers", {
   order: integer("order").default(0),
 });
 
-// Trip Team Contacts
-export const tripContacts = pgTable("trip_contacts", {
-  id: serial("id").primaryKey(),
-  type: text("type").notNull(), // 'leader', 'admin', 'doctor'
-  name: text("name").notNull(),
-  phone: text("phone").notNull(),
-  whatsapp: text("whatsapp").notNull(),
-  order: integer("order").default(0),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
-
 export const insertPrayerSchema = createInsertSchema(prayers).omit({ id: true });
 export type Prayer = typeof prayers.$inferSelect;
-
-export const insertTripContactSchema = createInsertSchema(tripContacts).omit({ id: true, updatedAt: true });
-export type TripContact = typeof tripContacts.$inferSelect;
-export type InsertTripContact = z.infer<typeof insertTripContactSchema>;
 
 export const insertUserSchema = createInsertSchema(users).omit({ id: true, createdAt: true });
 export const insertUmrahRequestSchema = createInsertSchema(umrahRequests).omit({ 
