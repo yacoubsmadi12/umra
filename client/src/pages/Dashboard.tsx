@@ -173,14 +173,14 @@ export default function Dashboard() {
             <StatusCard status={request.status} comments={request.adminComments} />
           )}
 
-          {/* Approved View (When request is accepted) - Moving Contacts here */}
+          {/* Approved View (When request is accepted) */}
           {request.status === 'approved' && (
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-6 mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <DashboardBox 
                   icon={ShieldCheck} 
                   title="التأشيرة الإلكترونية" 
@@ -239,6 +239,54 @@ export default function Dashboard() {
                   </DialogContent>
                 </Dialog>
 
+                <DashboardBox 
+                  icon={BookOpen} 
+                  title="كتيب زين للعمرة" 
+                  onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
+                >
+                  <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
+                </DashboardBox>
+
+                <Dialog open={showPayment} onOpenChange={setShowPayment}>
+                  <DialogTrigger asChild>
+                    <DashboardBox icon={CreditCard} title="طريقة الدفع">
+                      <p className="text-xs text-muted-foreground">
+                        {request.paymentMethod ? "تم تحديد: " + (
+                          request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
+                          request.paymentMethod === 'entertainment_allowance' ? 'خصم من بدل الترفيه' :
+                          request.paymentMethod === 'cash' ? 'كاش' :
+                          request.paymentMethod === 'cliQ' ? 'تحويل كليك' : request.paymentMethod
+                        ) : "اختر الطريقة المناسبة"}
+                      </p>
+                    </DashboardBox>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
+                    <DialogHeader>
+                      <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
+                      <DialogDescription className="text-center">
+                        اختر الطريقة التي تفضلها لتسديد تكاليف رحلة العمرة.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-6 py-6">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium pr-1">خيار الدفع</Label>
+                        <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
+                          <SelectTrigger className="w-full h-12 bg-muted/50 border-primary/20 hover:border-primary/40 transition-colors">
+                            <SelectValue placeholder="اختر الطريقة" />
+                          </SelectTrigger>
+                          <SelectContent className="bg-white dark:bg-slate-900 border-primary/10 shadow-xl">
+                            <SelectItem value="salary_deduction" className="h-10 cursor-pointer focus:bg-primary/5">خصم من الراتب</SelectItem>
+                            <SelectItem value="entertainment_allowance" className="h-10 cursor-pointer focus:bg-primary/5">خصم من بدل الترفيه</SelectItem>
+                            <SelectItem value="cash" className="h-10 cursor-pointer focus:bg-primary/5">كاش</SelectItem>
+                            <SelectItem value="cliQ" className="h-10 cursor-pointer focus:bg-primary/5">تحويل كليك</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/20" onClick={() => setShowPayment(false)}>حفظ وإغلاق</Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+
                 <Link href="/colleagues">
                   <DashboardBox icon={Users} title="زملاء الرحلة">
                     <p className="text-xs text-muted-foreground">تعرف على زملائك في الرحلة</p>
@@ -269,57 +317,6 @@ export default function Dashboard() {
                 <p className="text-xs text-muted-foreground">شارك واربح جوائز قيمة</p>
               </DashboardBox>
             </Link>
-
-            {/* Box 5: Booklet */}
-            <DashboardBox 
-              icon={BookOpen} 
-              title="كتيب زين للعمرة" 
-              onClick={() => window.open("https://drive.google.com/file/d/1d2kItW6Q-Ro1Buq2kfK2n59w5jcvOxCm/view?usp=sharing", "_blank")}
-              disabled={request.status !== 'approved'}
-            >
-              <p className="text-xs text-muted-foreground">تصفح مناسك العمرة والأدعية</p>
-            </DashboardBox>
-
-            {/* Box 2: Payment Method */}
-            <Dialog open={showPayment} onOpenChange={setShowPayment}>
-              <DialogTrigger asChild>
-                <DashboardBox icon={CreditCard} title="طريقة الدفع" disabled={request.status !== 'approved'}>
-                  <p className="text-xs text-muted-foreground">
-                    {request.paymentMethod ? "تم تحديد: " + (
-                      request.paymentMethod === 'salary_deduction' ? 'خصم من الراتب' :
-                      request.paymentMethod === 'entertainment_allowance' ? 'خصم من بدل الترفيه' :
-                      request.paymentMethod === 'cash' ? 'كاش' :
-                      request.paymentMethod === 'cliQ' ? 'تحويل كليك' : request.paymentMethod
-                    ) : "اختر الطريقة المناسبة"}
-                  </p>
-                </DashboardBox>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-md bg-white dark:bg-slate-900 border-none shadow-2xl">
-                <DialogHeader>
-                  <DialogTitle className="text-center text-xl font-bold font-tajawal">تحديد طريقة الدفع</DialogTitle>
-                  <DialogDescription className="text-center">
-                    اختر الطريقة التي تفضلها لتسديد تكاليف رحلة العمرة.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="space-y-6 py-6">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium pr-1">خيار الدفع</Label>
-                    <Select value={request.paymentMethod || ""} onValueChange={(v) => updateRequest({ id: request.id, data: { paymentMethod: v as any } })}>
-                      <SelectTrigger className="w-full h-12 bg-muted/50 border-primary/20 hover:border-primary/40 transition-colors">
-                        <SelectValue placeholder="اختر الطريقة" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-white dark:bg-slate-900 border-primary/10 shadow-xl">
-                        <SelectItem value="salary_deduction" className="h-10 cursor-pointer focus:bg-primary/5">خصم من الراتب</SelectItem>
-                        <SelectItem value="entertainment_allowance" className="h-10 cursor-pointer focus:bg-primary/5">خصم من بدل الترفيه</SelectItem>
-                        <SelectItem value="cash" className="h-10 cursor-pointer focus:bg-primary/5">كاش</SelectItem>
-                        <SelectItem value="cliQ" className="h-10 cursor-pointer focus:bg-primary/5">تحويل كليك</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button className="w-full h-12 text-lg font-bold shadow-lg hover:shadow-primary/20" onClick={() => setShowPayment(false)}>حفظ وإغلاق</Button>
-                </div>
-              </DialogContent>
-            </Dialog>
 
             {/* Box 3: Required Documents */}
             <Dialog open={showDocs} onOpenChange={setShowDocs}>
