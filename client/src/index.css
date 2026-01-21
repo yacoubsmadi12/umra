@@ -8,43 +8,43 @@
   --font-cairo: 'Cairo', sans-serif;
   --font-tajawal: 'Tajawal', sans-serif;
 
-  /* Zain & Spiritual Palette */
-  --background: 0 0% 98%;
+  /* Zain & Spiritual Palette - Enhanced for Islamic Aesthetic */
+  --background: 40 30% 98%; /* Warm Cream Background */
   --foreground: 222 47% 11%;
 
-  /* Deep Midnight Blue/Green for Spiritual depth */
-  --primary: 199 89% 25%; /* #074668 (Zain-ish Blue) */
-  --primary-foreground: 210 40% 98%;
+  /* Deep Emerald Green / Zain Blue Hybrid */
+  --primary: 160 84% 15%; /* Deep Spiritual Green */
+  --primary-foreground: 40 30% 98%;
 
-  /* Gold/Sand for Accents */
+  /* Gold / Sand for Spiritual Accents */
   --accent: 43 74% 49%; /* #D9A404 */
   --accent-foreground: 222 47% 11%;
 
-  --secondary: 210 40% 96%;
+  --secondary: 40 20% 94%; /* Warmer Secondary */
   --secondary-foreground: 222 47% 11%;
 
-  --muted: 210 40% 96%;
+  --muted: 40 10% 94%;
   --muted-foreground: 215 16% 47%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 199 89% 48%;
+  --border: 40 20% 90%;
+  --input: 40 20% 90%;
+  --ring: 160 84% 30%;
 
-  --radius: 0.75rem;
+  --radius: 1rem; /* More rounded for a softer feel */
 }
 
 .dark {
-  --background: 222 47% 11%;
-  --foreground: 210 40% 98%;
+  --background: 160 50% 5%; /* Very deep green-black */
+  --foreground: 40 30% 95%;
 
-  --primary: 199 89% 48%;
-  --primary-foreground: 222 47% 11%;
+  --primary: 160 60% 40%;
+  --primary-foreground: 160 50% 5%;
 
-  --accent: 43 74% 49%;
-  --accent-foreground: 222 47% 11%;
+  --accent: 43 74% 55%;
+  --accent-foreground: 160 50% 5%;
 }
 
 @layer base {
@@ -53,35 +53,42 @@
   }
   
   html {
-    direction: rtl; /* Force RTL */
+    direction: rtl;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-cairo);
+    background-image: 
+      radial-gradient(circle at 10% 20%, rgba(160, 84, 15, 0.02) 0%, transparent 20%),
+      radial-gradient(circle at 90% 80%, rgba(217, 164, 4, 0.02) 0%, transparent 20%);
+    background-attachment: fixed;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-tajawal);
-    @apply font-bold tracking-tight;
+    @apply font-bold tracking-tight text-primary;
   }
 }
 
 @keyframes slow-zoom {
   0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
+  50% { transform: scale(1.05); }
   100% { transform: scale(1); }
 }
 
 .animate-slow-zoom {
-  animation: slow-zoom 30s infinite ease-in-out;
+  animation: slow-zoom 20s infinite ease-in-out;
 }
 
 /* Islamic Geometric Pattern Background Utility */
 .bg-islamic-pattern {
-  background-image: radial-gradient(var(--primary) 1px, transparent 1px);
-  background-size: 20px 20px;
-  opacity: 0.05;
+  background-image: url("https://www.transparenttextures.com/patterns/islamic-art.png");
+  opacity: 0.03;
+}
+
+.spiritual-card {
+  @apply bg-white/80 dark:bg-card/80 backdrop-blur-sm border-primary/10 shadow-lg shadow-primary/5 hover:shadow-primary/10 transition-all duration-300;
 }
 
 /* Custom Scrollbar */

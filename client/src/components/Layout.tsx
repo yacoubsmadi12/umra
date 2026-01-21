@@ -37,10 +37,14 @@ export function Layout({ children, isAdmin }: LayoutProps) {
   return (
     <div dir="rtl" className="min-h-screen bg-background relative overflow-hidden font-cairo">
       {/* Decorative Background Pattern */}
-      <div className="fixed inset-0 bg-islamic-pattern pointer-events-none z-0" />
+      <div className="fixed inset-0 bg-islamic-pattern pointer-events-none z-0 opacity-5" />
+      
+      {/* Additional Decorative Elements */}
+      <div className="fixed top-0 left-0 w-64 h-64 bg-primary/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none" />
+      <div className="fixed bottom-0 right-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 pointer-events-none" />
 
       {/* Navbar (Mobile) */}
-      <div className="lg:hidden fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-border p-4 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 w-full z-50 bg-background/80 backdrop-blur-md border-b border-primary/10 p-4 flex items-center justify-between">
         <button onClick={toggleSidebar} className="p-2 hover:bg-muted rounded-full text-primary">
           <Menu className="w-6 h-6" />
         </button>
@@ -63,15 +67,18 @@ export function Layout({ children, isAdmin }: LayoutProps) {
               !isSidebarOpen && "hidden lg:block" // Hide on mobile if closed
             )}
           >
-            <div className="flex flex-col h-full p-6">
-              <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col h-full p-6 relative">
+              {/* Sidebar Pattern Overlay */}
+              <div className="absolute inset-0 bg-islamic-pattern opacity-[0.02] pointer-events-none" />
+              
+              <div className="flex items-center justify-between mb-8 relative z-10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-xl">Z</span>
+                  <div className="w-12 h-12 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg shadow-primary/20 rotate-3 group hover:rotate-0 transition-transform duration-300">
+                    <span className="text-white font-bold text-2xl">Z</span>
                   </div>
                   <div>
-                    <h2 className="font-bold text-lg leading-tight">برنامج العمرة</h2>
-                    <p className="text-xs text-muted-foreground">زين الأردن</p>
+                    <h2 className="font-bold text-xl leading-tight text-primary">برنامج العمرة</h2>
+                    <p className="text-xs text-accent font-medium">زين الأردن</p>
                   </div>
                 </div>
                 <button onClick={toggleSidebar} className="lg:hidden p-1 hover:bg-muted rounded-full">
@@ -79,13 +86,16 @@ export function Layout({ children, isAdmin }: LayoutProps) {
                 </button>
               </div>
 
-              <div className="mb-6 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                <p className="text-sm text-muted-foreground mb-1">مرحباً بك،</p>
-                <p className="font-bold text-primary">{user?.fullName}</p>
-                <p className="text-xs text-muted-foreground mt-1">{user?.jobTitle}</p>
+              <div className="mb-6 p-5 bg-gradient-to-r from-primary/10 to-transparent rounded-2xl border border-primary/10 relative z-10">
+                <p className="text-xs text-muted-foreground mb-1">مرحباً بك،</p>
+                <p className="font-bold text-primary text-lg">{user?.fullName}</p>
+                <div className="flex items-center gap-2 mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+                  <p className="text-xs text-muted-foreground">{user?.jobTitle}</p>
+                </div>
               </div>
 
-          <nav className="flex-1 space-y-2">
+          <nav className="flex-1 space-y-2 relative z-10">
             {navItems.map((item) => (
               <Link key={item.href} href={item.href}>
                 <div
