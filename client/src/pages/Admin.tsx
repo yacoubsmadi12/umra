@@ -11,7 +11,9 @@ import {
   ExternalLink,
   Phone,
   MessageCircle,
-  Contact2
+  Contact2,
+  Upload,
+  UserPlus
 } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { api, type UmrahRequest, type User, type EmailSettings, type TripContact } from "@shared/routes";
@@ -241,6 +243,16 @@ export default function Admin() {
     }
   });
 
+  const updateDocs = useMutation({
+    mutationFn: async ({ id, data }: { id: number, data: Partial<UmrahRequest> }) => {
+      return await apiRequest("PATCH", `/api/requests/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [api.requests.list.path] });
+      toast({ title: "تم التحديث", description: "تم تحديث الملفات بنجاح" });
+    }
+  });
+
   if (loadingReqs || loadingUsers) {
     return <div className="flex items-center justify-center min-h-screen"><Clock className="animate-spin text-primary" /></div>;
   }
@@ -295,7 +307,50 @@ export default function Admin() {
                         {new Date(req.createdAt || '').toLocaleDateString('ar-JO')}
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex gap-2 justify-end">
+                        <div className="flex gap-2 justify-end items-center">
+                          {req.status === 'approved' && (
+                            <div className="flex gap-1 border-l pl-2 ml-2">
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 w-8 p-0"
+                                title="رفع تأشيرة"
+                                onClick={() => {
+                                  const url = window.prompt("رابط التأشيرة:", req.visaUrl || "");
+                                  if (url !== null) updateDocs.mutate({ id: req.id, data: { visaUrl: url } });
+                                }}
+                              >
+                                <ShieldCheck className="w-4 h-4 text-primary" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 w-8 p-0"
+                                title="رفع تذكرة"
+                                onClick={() => {
+                                  const url = window.prompt("رابط التذكرة:", req.ticketUrl || "");
+                                  if (url !== null) updateDocs.mutate({ id: req.id, data: { ticketUrl: url } });
+                                }}
+                              >
+                                <FileText className="w-4 h-4 text-primary" />
+                              </Button>
+                              <Button 
+                                size="sm" 
+                                variant="ghost" 
+                                className="h-8 w-8 p-0"
+                                title="تحديد زملاء"
+                                onClick={() => {
+                                  const ids = window.prompt("أرقام الموظفين (مفصولة بفاصلة):", req.assignedColleagueIds?.join(",") || "");
+                                  if (ids !== null) {
+                                    const colleagueIds = ids.split(",").map(id => parseInt(id.trim())).filter(id => !isNaN(id));
+                                    updateDocs.mutate({ id: req.id, data: { assignedColleagueIds: colleagueIds } });
+                                  }
+                                }}
+                              >
+                                <UserPlus className="w-4 h-4 text-primary" />
+                              </Button>
+                            </div>
+                          )}
                           <Button 
                             size="sm" 
                             variant="outline" 
