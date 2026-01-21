@@ -87,12 +87,20 @@ export async function extractPassportData(url: string): Promise<string> {
 
         if (result && result.fields) {
           const f = result.fields;
-          // Combine firstName, middleName (if available), and lastName to get full name
-          // MRZ library usually provides firstName and lastName. firstName often contains middle names.
+          // Combine firstName and lastName to get full name
+          // MRZ firstName usually contains middle names separated by <
           const fullName = [f.firstName, f.lastName].filter(Boolean).join(' ').replace(/</g, ' ').trim();
           
+          // Format date of birth: YYMMDD to YYYY-MM-DD
+          let dob = f.birthDate || 'غير متوفر';
+          if (dob !== 'غير متوفر' && dob.length === 6) {
+            const yearPrefix = parseInt(dob.substring(0, 2)) > 25 ? '19' : '20';
+            dob = `${yearPrefix}${dob.substring(0, 2)}-${dob.substring(2, 4)}-${dob.substring(4, 6)}`;
+          }
+
           return `رقم الجواز: ${f.documentNumber || 'غير متوفر'}\n` +
                  `اسم صاحب الجواز: ${fullName || 'غير متوفر'}\n` +
+                 `تاريخ الميلاد: ${dob}\n` +
                  `الجنس: ${f.sex === 'male' ? 'ذكر' : f.sex === 'female' ? 'أنثى' : 'غير واضح'}\n` +
                  `الرقم الوطني: ${f.personalNumber || 'غير متوفر'}\n` +
                  `تاريخ الانتهاء: ${f.expirationDate || 'غير متوفر'}`;
@@ -110,6 +118,7 @@ export async function extractPassportData(url: string): Promise<string> {
     if (passportNoMatch || nameMatch) {
       return `رقم الجواز: ${passportNoMatch ? passportNoMatch[0] : 'غير واضح'}\n` +
              `اسم صاحب الجواز: ${nameMatch ? nameMatch[0] : 'غير واضح'}\n` +
+             `تاريخ الميلاد: غير واضح\n` +
              `الجنس: غير واضح\n` +
              `الرقم الوطني: غير واضح\n` +
              `تاريخ الانتهاء: غير واضح\n\n` +
